@@ -9,3 +9,6 @@ for implementation of the embedded workflow in micro-services:
 
 For more info please check two examples in *test-application* in the repository  
 (project *wiki* will be created soon).
+
+The releases are available:
+[https://maven.pkg.github.com/jan-komrska/minuteflow](https://maven.pkg.github.com/jan-komrska/minuteflow)
