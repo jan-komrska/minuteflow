@@ -6,7 +6,7 @@
 
     <groupId>org.minuteflow</groupId>
     <artifactId>minuteflow-parent</artifactId>
-    <version>0.3.4-SNAPSHOT</version>
+    <version>0.3.4</version>
     <packaging>pom</packaging>
 
     <properties>
