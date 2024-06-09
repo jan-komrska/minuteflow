@@ -1,7 +1,5 @@
 package org.minuteflow.core.api.contract;
 
-import java.util.Set;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -21,6 +19,8 @@ import java.util.Set;
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
+
+import java.util.Set;
 
 public interface CalculatedState extends State {
     public boolean appliesTo(Set<State> states);

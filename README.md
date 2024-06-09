@@ -6,7 +6,7 @@
 for implementation of the embedded workflow in micro-services:
 1. the workflow is executed on top of the application entities
 2. the workflow is composed of the application services
-3. the workflow can use calculated states,  
+3. the workflow can use calculated states  
    (the calculated state is a special state, which is applied based on some condition)
 
 *MinuteFlow* is using:
