@@ -54,11 +54,11 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
     public Set<State> getStates(Object entity) {
         if (isSupported(entity)) {
             Set<State> states = SetUtils.emptyIfNull(getStatesImpl(entityClass.cast(entity)));
-            Set<CalculatedState> calculatedStates = SetUtils.emptyIfNull(applyCalculatedStates(states));
+            Set<CalculatedState> appliedStates = SetUtils.emptyIfNull(applyCalculatedStates(states));
             //
             HashSet<State> allStates = new HashSet<State>();
             allStates.addAll(states);
-            allStates.addAll(calculatedStates);
+            allStates.addAll(appliedStates);
             return allStates;
         } else {
             throw new IllegalArgumentException();
