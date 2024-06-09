@@ -1,7 +1,5 @@
 package org.minuteflow.tstapp.json;
 
-import java.util.Set;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-test-application
@@ -63,19 +61,10 @@ public class OrderFlowConfiguration {
 
     @Bean
     public StateAccessor orderStateAccessor() {
-        var accessor = new JsonStateAccessor<OrderEntity>(OrderEntity.class) {
-            @Override
-            protected Set<CalculatedState> getCalculatedStates(Set<State> persistentStates) {
-                boolean finishAllowed = persistentStates.containsAll(Set.of( //
-                        orderStatePaymentDone(), orderStatePackagingDone() //
-                ));
-                //
-                CalculatedState additionalState = (finishAllowed) ? orderStatePaPDone() : orderStatePaPNotDone();
-                return Set.of(additionalState);
-            }
-        };
+        var accessor = new JsonStateAccessor<OrderEntity>(OrderEntity.class);
         accessor.setStateGetter(OrderEntity::getStates);
         accessor.setStateSetter(OrderEntity::setStates);
+        accessor.setCalculatedStates(orderStatePaPDone(), orderStatePaPNotDone());
         return accessor;
     }
 
@@ -113,12 +102,12 @@ public class OrderFlowConfiguration {
 
     @Bean
     public CalculatedState orderStatePaPDone() {
-        return new BaseCalculatedState();
+        return new BaseCalculatedState().applyWhenContainsAll(orderStatePackagingDone(), orderStatePaymentDone());
     }
 
     @Bean
     public CalculatedState orderStatePaPNotDone() {
-        return new BaseCalculatedState();
+        return new BaseCalculatedState().applyWhenNotContainsAll(orderStatePackagingDone(), orderStatePaymentDone());
     }
 
     //

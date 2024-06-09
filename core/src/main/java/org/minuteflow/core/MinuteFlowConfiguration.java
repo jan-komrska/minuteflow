@@ -22,8 +22,9 @@ package org.minuteflow.core;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 
 @Configuration
-@ComponentScan("org.minuteflow.core.impl")
+@ComponentScan(basePackages = "org.minuteflow.core.impl", nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)
 public class MinuteFlowConfiguration {
 }
