@@ -1,5 +1,7 @@
 package org.minuteflow.core.api.contract;
 
+import java.util.Set;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -21,4 +23,5 @@ package org.minuteflow.core.api.contract;
  */
 
 public interface CalculatedState extends State {
+    public boolean appliesTo(Set<State> states);
 }

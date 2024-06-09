@@ -20,9 +20,20 @@ package org.minuteflow.core.api.bean;
  * =========================LICENSE_END==================================
  */
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.contract.CalculatedState;
 import org.minuteflow.core.api.contract.State;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class BaseCalculatedState extends BaseState implements CalculatedState {
     public BaseCalculatedState() {
         super();
@@ -34,5 +45,26 @@ public class BaseCalculatedState extends BaseState implements CalculatedState {
 
     public BaseCalculatedState(String name, State parentState) {
         super(name, parentState);
+    }
+
+    //
+
+    private Predicate<Set<State>> predicate;
+
+    @Override
+    public boolean appliesTo(Set<State> states) {
+        return (predicate != null) ? predicate.test(states) : false;
+    }
+
+    public BaseCalculatedState applyWhenContainsAll(State... targetStatesAsArray) {
+        List<State> targetStates = Arrays.asList(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
+        setPredicate((sourceStates) -> sourceStates.containsAll(targetStates));
+        return this;
+    }
+
+    public BaseCalculatedState applyWhenNotContainsAll(State... targetStatesAsArray) {
+        List<State> targetStates = Arrays.asList(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
+        setPredicate((sourceStates) -> !sourceStates.containsAll(targetStates));
+        return this;
     }
 }
