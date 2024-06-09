@@ -113,17 +113,15 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
     }
 
     public Set<CalculatedState> getCalculatedStates() {
-        return calculatedStates;
+        return SetUtils.unmodifiableSet(calculatedStates);
     }
 
     public void setCalculatedStates(Set<CalculatedState> calculatedStates) {
-        this.calculatedStates.clear();
-        this.calculatedStates.addAll(SetUtils.emptyIfNull(calculatedStates));
+        this.calculatedStates = new HashSet<CalculatedState>(SetUtils.emptyIfNull(calculatedStates));
     }
 
     public void setCalculatedStates(CalculatedState... calculatedStates) {
-        setCalculatedStates(Set.of( //
-                ArrayUtils.nullToEmpty(calculatedStates, CalculatedState[].class) //
-        ));
+        calculatedStates = ArrayUtils.nullToEmpty(calculatedStates, CalculatedState[].class);
+        setCalculatedStates(Set.of(calculatedStates));
     }
 }
