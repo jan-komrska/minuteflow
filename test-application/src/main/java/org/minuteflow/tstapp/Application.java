@@ -1,12 +1,5 @@
 package org.minuteflow.tstapp;
 
-import java.util.Set;
-
-import org.minuteflow.core.api.contract.State;
-import org.minuteflow.core.api.contract.StateManager;
-import org.minuteflow.tstapp.json.OrderEntity;
-import org.minuteflow.tstapp.json.OrderManager;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-test-application
@@ -27,6 +20,12 @@ import org.minuteflow.tstapp.json.OrderManager;
  * =========================LICENSE_END==================================
  */
 
+import java.util.Set;
+
+import org.minuteflow.core.api.contract.State;
+import org.minuteflow.core.api.contract.StateManager;
+import org.minuteflow.tstapp.json.OrderEntity;
+import org.minuteflow.tstapp.json.OrderManager;
 import org.minuteflow.tstapp.mapped.TaskEntity;
 import org.minuteflow.tstapp.mapped.TaskEntityState;
 import org.minuteflow.tstapp.mapped.TaskManager;
@@ -35,41 +34,58 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class Application {
+    @Autowired
+    private TaskManager taskManager;
+
+    public void taskManagerExample() {
+        TaskEntity taskEntity = new TaskEntity();
+        taskEntity.setId(1l);
+        taskEntity.setName("Prepare project");
+        taskEntity.setState(TaskEntityState.OPEN);
+        //
+        taskManager.startTask(taskEntity);
+        taskManager.finishTask(taskEntity);
+    }
+
+    //
+
+    @Autowired
+    private OrderManager orderManager;
+
+    @Autowired
+    private StateManager stateManager;
+
+    @Autowired
+    @Qualifier("orderStateOpen")
+    private State orderStateOpen;
+
+    public void orderManagerExample() {
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setId(2L);
+        orderEntity.setName("Order lunch");
+        stateManager.setStates(orderEntity, Set.of(orderStateOpen));
+        //
+        orderManager.startOrder(orderEntity);
+        orderManager.orderPaymentDone(orderEntity);
+        orderManager.orderPackagingDone(orderEntity);
+    }
+
+    //
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
 
     @Bean
-    public CommandLineRunner commandLineRunner( //
-            @Autowired ApplicationContext context, @Autowired StateManager stateManager, //
-            @Autowired @Qualifier("orderStateOpen") State orderStateOpen //
-    ) {
+    public CommandLineRunner commandLineRunner() {
         return args -> {
             System.out.println("Let's start flow:");
-            //
-            TaskEntity taskEntity = new TaskEntity();
-            taskEntity.setId(1l);
-            taskEntity.setName("Prepare project");
-            taskEntity.setState(TaskEntityState.OPEN);
-            //
-            TaskManager taskManager = context.getBean(TaskManager.class);
-            taskManager.startTask(taskEntity);
-            taskManager.finishTask(taskEntity);
-            //
-            OrderEntity orderEntity = new OrderEntity();
-            orderEntity.setId(2L);
-            orderEntity.setName("Order lunch");
-            stateManager.setStates(orderEntity, Set.of(orderStateOpen));
-            //
-            OrderManager orderManager = context.getBean(OrderManager.class);
-            orderManager.startOrder(orderEntity);
-            orderManager.orderPaymentDone(orderEntity);
-            orderManager.orderPackagingDone(orderEntity);
+            taskManagerExample();
+            orderManagerExample();
         };
     }
 }
