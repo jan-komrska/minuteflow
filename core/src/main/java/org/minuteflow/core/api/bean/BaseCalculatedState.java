@@ -20,8 +20,6 @@ package org.minuteflow.core.api.bean;
  * =========================LICENSE_END==================================
  */
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -57,13 +55,13 @@ public class BaseCalculatedState extends BaseState implements CalculatedState {
     }
 
     public BaseCalculatedState applyWhenContainsAll(State... targetStatesAsArray) {
-        List<State> targetStates = Arrays.asList(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
+        Set<State> targetStates = Set.of(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
         setPredicate((sourceStates) -> sourceStates.containsAll(targetStates));
         return this;
     }
 
     public BaseCalculatedState applyWhenNotContainsAll(State... targetStatesAsArray) {
-        List<State> targetStates = Arrays.asList(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
+        Set<State> targetStates = Set.of(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
         setPredicate((sourceStates) -> !sourceStates.containsAll(targetStates));
         return this;
     }
