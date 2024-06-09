@@ -66,14 +66,12 @@ public class OrderFlowConfiguration {
         var accessor = new JsonStateAccessor<OrderEntity>(OrderEntity.class) {
             @Override
             protected Set<CalculatedState> getCalculatedStates(Set<State> persistentStates) {
-                boolean finishAllowed = //
-                        persistentStates.contains(orderStatePaymentDone()) && //
-                                persistentStates.contains(orderStatePackagingDone());
-                if (finishAllowed) {
-                    return Set.of(orderStatePaPDone());
-                } else {
-                    return Set.of(orderStatePaPNotDone());
-                }
+                boolean finishAllowed = persistentStates.containsAll(Set.of( //
+                        orderStatePaymentDone(), orderStatePackagingDone() //
+                ));
+                //
+                CalculatedState additionalState = (finishAllowed) ? orderStatePaPDone() : orderStatePaPNotDone();
+                return Set.of(additionalState);
             }
         };
         accessor.setStateGetter(OrderEntity::getStates);
