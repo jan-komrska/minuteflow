@@ -16,7 +16,10 @@ for implementation of the embedded workflow in micro-services:
 For more info please check project [wiki](https://github.com/jan-komrska/minuteflow/wiki)
 or two examples in *test-application* module in the repository.
 
-Maven dependency [central](https://repo1.maven.org/maven2/org/minuteflow/minuteflow-core/0.3.6/):
+## Installation
+
+*MinuteFlow* packages are stored in [maven central repository](https://repo1.maven.org/maven2/org/minuteflow/minuteflow-core/0.3.6/).  
+You can download the latest version by using following dependency:
 
 ```
 <dependency>
