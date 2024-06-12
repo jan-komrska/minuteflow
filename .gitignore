@@ -1,3 +1,5 @@
 /.project
 /.settings
 /TODO.txt
+/target/
+/build.bat
