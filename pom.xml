@@ -40,7 +40,6 @@
 
     <modules>
         <module>core</module>
-        <module>test-application</module>
     </modules>
 
     <dependencyManagement>
@@ -112,6 +111,13 @@
     </distributionManagement>
 
     <profiles>
+        <profile>
+            <id>development</id>
+            <modules>
+                <module>test-application</module>
+            </modules>
+        </profile>
+
         <profile>
             <id>release</id>
             <build>
