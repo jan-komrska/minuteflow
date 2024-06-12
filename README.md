@@ -15,3 +15,13 @@ for implementation of the embedded workflow in micro-services:
 
 For more info please check project [wiki](https://github.com/jan-komrska/minuteflow/wiki)
 or two examples in *test-application* module in the repository.
+
+Maven dependency:
+
+```
+<dependency>
+  <groupId>org.minuteflow</groupId>
+  <artifactId>minuteflow-core</artifactId>
+  <version>0.3.6</version>
+</dependency>
+```
