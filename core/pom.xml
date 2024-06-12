@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.minuteflow</groupId>
         <artifactId>minuteflow-parent</artifactId>
-        <version>0.3.6</version>
+        <version>0.3.7-SNAPSHOT</version>
     </parent>
 
     <dependencies>
