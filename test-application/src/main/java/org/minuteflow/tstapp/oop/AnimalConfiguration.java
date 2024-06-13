@@ -50,12 +50,12 @@ public class AnimalConfiguration {
 
     @Primary
     @Bean
-    public DispatchProxyFactory<AnimalManager> taskManager() {
+    public DispatchProxyFactory<AnimalManager> animalManager() {
         return new DispatchProxyFactory<AnimalManager>(AnimalManager.class, dispatcher);
     }
 
     @Bean
-    public StateAccessor taskStateAccessor() {
+    public StateAccessor animalStateAccessor() {
         var stateMap = new DualHashBidiMap<AnimalEntityType, State>();
         stateMap.put(AnimalEntityType.DOG, animalStateDog());
         stateMap.put(AnimalEntityType.CAT, animalStateCat());

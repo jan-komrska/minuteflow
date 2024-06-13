@@ -106,8 +106,13 @@ public class Application {
     public CommandLineRunner commandLineRunner() {
         return args -> {
             System.out.println("Let's start flow:");
+            System.out.println("--");
+            animalManagerExample();
+            System.out.println("--");
             taskManagerExample();
+            System.out.println("--");
             orderManagerExample();
+            System.out.println("--");
         };
     }
 }
