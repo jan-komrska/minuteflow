@@ -79,6 +79,7 @@ public class Application {
 
     //
 
+    @Autowired
     private AnimalManager animalManager;
 
     public void animalManagerExample() {
