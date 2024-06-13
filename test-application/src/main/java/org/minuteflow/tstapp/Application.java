@@ -29,6 +29,9 @@ import org.minuteflow.tstapp.json.OrderManager;
 import org.minuteflow.tstapp.mapped.TaskEntity;
 import org.minuteflow.tstapp.mapped.TaskEntityState;
 import org.minuteflow.tstapp.mapped.TaskManager;
+import org.minuteflow.tstapp.oop.AnimalEntity;
+import org.minuteflow.tstapp.oop.AnimalEntityType;
+import org.minuteflow.tstapp.oop.AnimalManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
@@ -72,6 +75,25 @@ public class Application {
         orderManager.startOrder(orderEntity);
         orderManager.orderPaymentDone(orderEntity);
         orderManager.orderPackagingDone(orderEntity);
+    }
+
+    //
+
+    private AnimalManager animalManager;
+
+    public void animalManagerExample() {
+        AnimalEntity dog = new AnimalEntity();
+        dog.setId(1l);
+        dog.setName("Max");
+        dog.setType(AnimalEntityType.DOG);
+        //
+        AnimalEntity cat = new AnimalEntity();
+        cat.setId(2l);
+        cat.setName("Molly");
+        cat.setType(AnimalEntityType.CAT);
+        //
+        animalManager.makeSound(dog);
+        animalManager.makeSound(cat);
     }
 
     //

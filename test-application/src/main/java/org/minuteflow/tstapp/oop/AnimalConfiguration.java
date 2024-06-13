@@ -20,9 +20,22 @@ package org.minuteflow.tstapp.oop;
  * =========================LICENSE_END==================================
  */
 
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.minuteflow.core.MinuteFlowConfiguration;
+import org.minuteflow.core.api.annotation.ActionRef;
+import org.minuteflow.core.api.bean.BaseController;
+import org.minuteflow.core.api.bean.BaseState;
+import org.minuteflow.core.api.bean.DispatchProxyFactory;
+import org.minuteflow.core.api.bean.MappedStateAccessor;
+import org.minuteflow.core.api.contract.Controller;
+import org.minuteflow.core.api.contract.Dispatcher;
+import org.minuteflow.core.api.contract.State;
+import org.minuteflow.core.api.contract.StateAccessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,5 +43,73 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @Import(MinuteFlowConfiguration.class)
 public class AnimalConfiguration {
+    @Autowired
+    private Dispatcher dispatcher;
 
+    //
+
+    @Primary
+    @Bean
+    public DispatchProxyFactory<AnimalManager> taskManager() {
+        return new DispatchProxyFactory<AnimalManager>(AnimalManager.class, dispatcher);
+    }
+
+    @Bean
+    public StateAccessor taskStateAccessor() {
+        var stateMap = new DualHashBidiMap<AnimalEntityType, State>();
+        stateMap.put(AnimalEntityType.DOG, animalStateDog());
+        stateMap.put(AnimalEntityType.CAT, animalStateCat());
+        //
+        var accessor = new MappedStateAccessor<AnimalEntity, AnimalEntityType>(AnimalEntity.class, AnimalEntityType.class);
+        accessor.setStateMap(stateMap);
+        accessor.setStateGetter(AnimalEntity::getType);
+        accessor.setStateSetter(AnimalEntity::setType);
+        return accessor;
+    }
+
+    //
+
+    @Bean
+    public State animalStateDog() {
+        return new BaseState();
+    }
+
+    @Bean
+    public State animalStateCat() {
+        return new BaseState();
+    }
+
+    //
+
+    @Bean
+    public AnimalManager animalManagerStateDog() {
+        return new AnimalManager() {
+            @Override
+            @ActionRef
+            public void makeSound(AnimalEntity animal) {
+                log.info(animal + " make sound: woof woof.");
+            }
+        };
+    }
+
+    @Bean
+    public Controller animalControllerStateDog() {
+        return new BaseController(animalStateDog(), animalManagerStateDog());
+    }
+
+    @Bean
+    public AnimalManager animalManagerStateCat() {
+        return new AnimalManager() {
+            @Override
+            @ActionRef
+            public void makeSound(AnimalEntity animal) {
+                log.info(animal + " make sound: meow meow.");
+            }
+        };
+    }
+
+    @Bean
+    public Controller animalControllerStateCat() {
+        return new BaseController(animalStateCat(), animalManagerStateCat());
+    }
 }
