@@ -23,14 +23,17 @@ package org.minuteflow.core.impl.factory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefs;
+import org.minuteflow.core.api.bean.BaseController;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.core.annotation.MergedAnnotation;
@@ -40,6 +43,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProcessor {
+    private AtomicLong beanNameSequence = new AtomicLong(0);
+
+    public String nextBeanName(String type) {
+        return "minute-flow:" + type + ":" + beanNameSequence.addAndGet(1);
+    }
+
+    //
+
     private List<MergedAnnotation<ControllerRef>> getControllerRefs(MergedAnnotations mergedAnnotations) {
         ArrayList<MergedAnnotation<ControllerRef>> controllerRefs = new ArrayList<MergedAnnotation<ControllerRef>>();
         //
@@ -52,6 +63,20 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerRefs;
     }
 
+    private void registerController(BeanDefinitionRegistry registry, String stateName, String serviceName) {
+        String controllerName = nextBeanName("controller");
+        //
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
+        beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
+        beanDefinitionBuilder.setLazyInit(false);
+        beanDefinitionBuilder.addPropertyReference("state", stateName);
+        beanDefinitionBuilder.addPropertyReference("service", serviceName);
+        //
+        registry.registerBeanDefinition(controllerName, beanDefinitionBuilder.getBeanDefinition());
+        //
+        log.debug("Registered controller [" + stateName, "," + serviceName + "]");
+    }
+
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         String[] beanNames = ArrayUtils.nullToEmpty(registry.getBeanDefinitionNames());
@@ -60,6 +85,9 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
             if (abstractBeanDefinition instanceof AnnotatedBeanDefinition beanDefinition) {
                 MergedAnnotations mergedAnnotations = beanDefinition.getMetadata().getAnnotations();
                 List<MergedAnnotation<ControllerRef>> controlleRefs = getControllerRefs(mergedAnnotations);
+                for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
+                    registerController(registry, controllerRef.getString("value"), beanName);
+                }
             }
         }
     }
