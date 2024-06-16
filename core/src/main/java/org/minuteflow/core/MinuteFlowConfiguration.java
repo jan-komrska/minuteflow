@@ -20,6 +20,8 @@ package org.minuteflow.core;
  * =========================LICENSE_END==================================
  */
 
+import org.minuteflow.core.impl.factory.MinuteFlowPostProcessor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
@@ -27,4 +29,8 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 @Configuration
 @ComponentScan(basePackages = "org.minuteflow.core.impl", nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)
 public class MinuteFlowConfiguration {
+    @Bean
+    public static MinuteFlowPostProcessor minuteFlowPostProcessor() {
+        return new MinuteFlowPostProcessor();
+    }
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefs;
 import org.minuteflow.core.api.bean.BaseController;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,7 +71,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
         beanDefinitionBuilder.setLazyInit(false);
-        beanDefinitionBuilder.addPropertyReference("state", stateName);
+        beanDefinitionBuilder.addPropertyReference("parentState", stateName);
         beanDefinitionBuilder.addPropertyReference("service", serviceName);
         //
         registry.registerBeanDefinition(controllerName, beanDefinitionBuilder.getBeanDefinition());
@@ -83,10 +85,19 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         for (String beanName : beanNames) {
             BeanDefinition abstractBeanDefinition = registry.getBeanDefinition(beanName);
             if (abstractBeanDefinition instanceof AnnotatedBeanDefinition beanDefinition) {
-                MergedAnnotations mergedAnnotations = beanDefinition.getMetadata().getAnnotations();
-                List<MergedAnnotation<ControllerRef>> controlleRefs = getControllerRefs(mergedAnnotations);
-                for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
-                    registerController(registry, controllerRef.getString("value"), beanName);
+                AnnotatedTypeMetadata metadata;
+                if (StringUtils.isNotEmpty(beanDefinition.getFactoryBeanName())) {
+                    metadata = beanDefinition.getFactoryMethodMetadata();
+                } else {
+                    metadata = beanDefinition.getMetadata();
+                }
+                //
+                if (metadata != null) {
+                    MergedAnnotations mergedAnnotations = metadata.getAnnotations();
+                    List<MergedAnnotation<ControllerRef>> controlleRefs = getControllerRefs(mergedAnnotations);
+                    for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
+                        registerController(registry, controllerRef.getString("value"), beanName);
+                    }
                 }
             }
         }
