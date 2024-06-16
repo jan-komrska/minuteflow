@@ -3,8 +3,8 @@
 *MinuteFlow* is a small *spring-boot* library, which is using domain-driven design in order to implement  
 the business logic (or the business workflow) on top of the domain entities.
 
-*MinuteFlow* have two unique features, which make it a good choice
-for implementation of the embedded workflow in micro-services:
+*MinuteFlow* has two unique features, which make it a good choice for implementation  
+of the embedded workflow in micro-services:
 1. the workflow is executed on top of the domain entities
 2. the workflow is composed of the domain services
 

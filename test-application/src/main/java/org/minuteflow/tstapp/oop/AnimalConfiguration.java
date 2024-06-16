@@ -23,11 +23,10 @@ package org.minuteflow.tstapp.oop;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
-import org.minuteflow.core.api.bean.BaseController;
+import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.bean.BaseState;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
 import org.minuteflow.core.api.bean.MappedStateAccessor;
-import org.minuteflow.core.api.contract.Controller;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
@@ -81,6 +80,7 @@ public class AnimalConfiguration {
 
     //
 
+    @ControllerRef("animalStateDog")
     @Bean
     public AnimalManager animalManagerStateDog() {
         return new AnimalManager() {
@@ -92,11 +92,7 @@ public class AnimalConfiguration {
         };
     }
 
-    @Bean
-    public Controller animalControllerStateDog() {
-        return new BaseController(animalStateDog(), animalManagerStateDog());
-    }
-
+    @ControllerRef("animalStateCat")
     @Bean
     public AnimalManager animalManagerStateCat() {
         return new AnimalManager() {
@@ -106,10 +102,5 @@ public class AnimalConfiguration {
                 log.info(animal + " make sound: meow meow.");
             }
         };
-    }
-
-    @Bean
-    public Controller animalControllerStateCat() {
-        return new BaseController(animalStateCat(), animalManagerStateCat());
     }
 }
