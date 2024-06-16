@@ -91,7 +91,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
             BeanDefinition abstractBeanDefinition = registry.getBeanDefinition(beanName);
             if (abstractBeanDefinition instanceof AnnotatedBeanDefinition beanDefinition) {
                 AnnotatedTypeMetadata metadata;
-                if (StringUtils.isNotEmpty(beanDefinition.getFactoryBeanName())) {
+                if (StringUtils.isNotEmpty(beanDefinition.getFactoryMethodName())) {
                     metadata = beanDefinition.getFactoryMethodMetadata();
                 } else {
                     metadata = beanDefinition.getMetadata();
