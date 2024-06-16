@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 
 @Repeatable(ControllerRefs.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
+@Target({ ElementType.TYPE, ElementType.METHOD })
 public @interface ControllerRef {
     public String value();
 }
