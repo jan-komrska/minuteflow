@@ -70,18 +70,18 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerRefs;
     }
 
-    private void registerController(BeanDefinitionRegistry registry, String stateName, String serviceName) {
+    private void registerController(BeanDefinitionRegistry registry, String parentStateName, String serviceName) {
         String controllerName = nextBeanName("controller");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
         beanDefinitionBuilder.setLazyInit(false);
-        beanDefinitionBuilder.addPropertyReference("parentState", stateName);
+        beanDefinitionBuilder.addPropertyReference("parentState", parentStateName);
         beanDefinitionBuilder.addPropertyReference("service", serviceName);
         //
         registry.registerBeanDefinition(controllerName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered controller [" + stateName, "," + serviceName + "]");
+        log.debug("Registered controller [" + parentStateName, "," + serviceName + "]");
     }
 
     @Override
