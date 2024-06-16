@@ -37,14 +37,19 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProcessor {
+@Component
+@Scope(BeanDefinition.SCOPE_SINGLETON)
+public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered {
     private AtomicLong beanNameSequence = new AtomicLong(0);
 
     public String nextBeanName(String type) {
@@ -106,5 +111,10 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         // DO NOTHING
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.LOWEST_PRECEDENCE;
     }
 }
