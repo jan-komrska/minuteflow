@@ -24,11 +24,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.collections4.MapUtils;
 import org.minuteflow.core.api.contract.State;
 
 public class BasePropertyState extends BaseState {
-    private Map<String, Object> properties = Collections.emptyMap();
+    private Map<String, Object> rwProperties;
+    private Map<String, Object> roProperties;
+
+    {
+        rwProperties = new HashMap<String, Object>();
+        roProperties = Collections.unmodifiableMap(rwProperties);
+    }
 
     //
 
@@ -47,11 +52,11 @@ public class BasePropertyState extends BaseState {
     //
 
     public Map<String, Object> getProperties() {
-        return properties;
+        return roProperties;
     }
 
-    public void setProperties(Map<String, Object> properties) {
-        properties = new HashMap<String, Object>(MapUtils.emptyIfNull(properties));
-        this.properties = Collections.unmodifiableMap(properties);
+    public BasePropertyState withProperty(String name, Object value) {
+        rwProperties.put(name, value);
+        return this;
     }
 }
