@@ -1,5 +1,7 @@
 package org.minuteflow.tstapp.json;
 
+import java.util.Set;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-test-application
@@ -64,7 +66,7 @@ public class OrderFlowConfiguration {
         var accessor = new JsonStateAccessor<OrderEntity>(OrderEntity.class);
         accessor.setStateGetter(OrderEntity::getStates);
         accessor.setStateSetter(OrderEntity::setStates);
-        accessor.setCalculatedStates(orderStatePaPDone(), orderStatePaPNotDone());
+        accessor.setCalculatedStates(Set.of(orderStatePaPDone(), orderStatePaPNotDone()));
         return accessor;
     }
 

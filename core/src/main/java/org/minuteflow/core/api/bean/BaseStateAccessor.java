@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.contract.CalculatedState;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
@@ -37,7 +37,6 @@ import lombok.ToString;
 public abstract class BaseStateAccessor<Entity> implements StateAccessor {
     private String groupName = null;
     private Class<Entity> entityClass = null;
-    private Set<CalculatedState> calculatedStates = new HashSet<CalculatedState>();
 
     //
 
@@ -53,13 +52,10 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
 
     public Set<State> getStates(Object entity) {
         if (isSupported(entity)) {
-            Set<State> states = SetUtils.emptyIfNull(getStatesImpl(entityClass.cast(entity)));
-            Set<CalculatedState> appliedStates = SetUtils.emptyIfNull(applyCalculatedStates(states));
-            //
-            HashSet<State> allStates = new HashSet<State>();
-            allStates.addAll(states);
-            allStates.addAll(appliedStates);
-            return allStates;
+            Set<State> states = new HashSet<State>(SetUtils.emptyIfNull( //
+                    getStatesImpl(entityClass.cast(entity))));
+            filterCalculatedStates(states);
+            return states;
         } else {
             throw new IllegalArgumentException();
         }
@@ -80,14 +76,17 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
 
     protected abstract void setStatesImpl(Entity entity, Set<State> states) throws EntityUpdateRejectedException;
 
-    protected Set<CalculatedState> applyCalculatedStates(Set<State> persistentStates) {
-        Set<CalculatedState> appliedStates = new HashSet<CalculatedState>();
-        for (CalculatedState calculatedState : calculatedStates) {
-            if (calculatedState.appliesTo(persistentStates)) {
-                appliedStates.add(calculatedState);
+    protected void filterCalculatedStates(Set<State> states) {
+        Set<State> persistentStates = new HashSet<>(SetUtils.emptyIfNull(states));
+        CollectionUtils.filter(persistentStates, (state) -> !(state instanceof CalculatedState));
+        //
+        CollectionUtils.filter(states, (state) -> {
+            if (state instanceof CalculatedState calculatedState) {
+                return calculatedState.appliesTo(persistentStates);
+            } else {
+                return true;
             }
-        }
-        return appliedStates;
+        });
     }
 
     protected Set<State> removeCalculatedStates(Set<State> allStates) {
@@ -110,18 +109,5 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
     @Override
     public Class<?> getEntityClass() {
         return entityClass;
-    }
-
-    public Set<CalculatedState> getCalculatedStates() {
-        return SetUtils.unmodifiableSet(calculatedStates);
-    }
-
-    public void setCalculatedStates(Set<CalculatedState> calculatedStates) {
-        this.calculatedStates = new HashSet<CalculatedState>(SetUtils.emptyIfNull(calculatedStates));
-    }
-
-    public void setCalculatedStates(CalculatedState... calculatedStates) {
-        calculatedStates = ArrayUtils.nullToEmpty(calculatedStates, CalculatedState[].class);
-        setCalculatedStates(Set.of(calculatedStates));
     }
 }

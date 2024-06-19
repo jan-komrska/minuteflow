@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.minuteflow.core.api.contract.CalculatedState;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateCollection;
 import org.minuteflow.core.api.exception.EntityUpdateRejectedException;
@@ -52,6 +53,8 @@ public class JsonStateAccessor<Entity> extends BaseStateAccessor<Entity> {
 
     private Function<Entity, String> stateGetter = null;
     private BiConsumer<Entity, String> stateSetter = null;
+
+    private Set<CalculatedState> calculatedStates = null;
 
     //
 
@@ -87,6 +90,9 @@ public class JsonStateAccessor<Entity> extends BaseStateAccessor<Entity> {
                 throw new IllegalStateException();
             }
         }
+        //
+        states.addAll(calculatedStates);
+        //
         return states;
     }
 
