@@ -24,9 +24,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.minuteflow.core.api.contract.PropertyState;
 import org.minuteflow.core.api.contract.State;
 
-public class BasePropertyState extends BaseState {
+public class BasePropertyState extends BaseState implements PropertyState {
     private Map<String, Object> rwProperties;
     private Map<String, Object> roProperties;
 

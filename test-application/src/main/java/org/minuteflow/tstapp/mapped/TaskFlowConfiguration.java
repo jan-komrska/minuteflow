@@ -20,14 +20,12 @@ package org.minuteflow.tstapp.mapped;
  * =========================LICENSE_END==================================
  */
 
-import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
-import org.minuteflow.core.api.bean.BaseController;
-import org.minuteflow.core.api.bean.BaseState;
+import org.minuteflow.core.api.annotation.ControllerRef;
+import org.minuteflow.core.api.bean.BasePropertyState;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
-import org.minuteflow.core.api.bean.MappedStateAccessor;
-import org.minuteflow.core.api.contract.Controller;
+import org.minuteflow.core.api.bean.PropertyStateAccessor;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
@@ -44,55 +42,31 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @Import(MinuteFlowConfiguration.class)
 public class TaskFlowConfiguration {
-    @Autowired
-    private StateManager stateManager;
-
-    @Autowired
-    private Dispatcher dispatcher;
-
-    //
-
-    @Primary
-    @Bean
-    public DispatchProxyFactory<TaskManager> taskManager() {
-        return new DispatchProxyFactory<TaskManager>(TaskManager.class, dispatcher);
-    }
-
-    @Bean
-    public StateAccessor taskStateAccessor() {
-        var stateMap = new DualHashBidiMap<TaskEntityState, State>();
-        stateMap.put(TaskEntityState.OPEN, taskStateOpen());
-        stateMap.put(TaskEntityState.IN_PROGRESS, taskStateInProgress());
-        stateMap.put(TaskEntityState.DONE, taskStateDone());
-        //
-        var accessor = new MappedStateAccessor<TaskEntity, TaskEntityState>(TaskEntity.class, TaskEntityState.class);
-        accessor.setStateMap(stateMap);
-        accessor.setStateGetter(TaskEntity::getState);
-        accessor.setStateSetter(TaskEntity::setState);
-        return accessor;
-    }
-
-    //
-
     @Bean
     public State taskStateOpen() {
-        return new BaseState();
+        return new BasePropertyState().withProperty("state", TaskEntityState.OPEN);
     }
 
     @Bean
     public State taskStateInProgress() {
-        return new BaseState();
+        return new BasePropertyState().withProperty("state", TaskEntityState.IN_PROGRESS);
     }
 
     @Bean
     public State taskStateDone() {
-        return new BaseState();
+        return new BasePropertyState().withProperty("state", TaskEntityState.DONE);
+    }
+
+    @Bean
+    public StateAccessor taskStateAccessor() {
+        return new PropertyStateAccessor<TaskEntity>(TaskEntity.class).withManagedStates(taskStateOpen(), taskStateInProgress(), taskStateDone());
     }
 
     //
 
+    @ControllerRef("taskStateOpen")
     @Bean
-    public TaskManager taskManagerStateOpen() {
+    public TaskManager taskManagerStateOpen(@Autowired StateManager stateManager) {
         return new TaskManager() {
             @Override
             @ActionRef
@@ -104,15 +78,9 @@ public class TaskFlowConfiguration {
         };
     }
 
+    @ControllerRef("taskStateInProgress")
     @Bean
-    public Controller taskControllerStateOpen() {
-        return new BaseController(taskStateOpen(), taskManagerStateOpen());
-    }
-
-    //
-
-    @Bean
-    public TaskManager taskManagerStateInProgress() {
+    public TaskManager taskManagerStateInProgress(@Autowired StateManager stateManager) {
         return new TaskManager() {
             @Override
             @ActionRef
@@ -124,8 +92,9 @@ public class TaskFlowConfiguration {
         };
     }
 
+    @Primary
     @Bean
-    public Controller taskControllerStateInProgress(StateManager stateManager) {
-        return new BaseController(taskStateInProgress(), taskManagerStateInProgress());
+    public DispatchProxyFactory<TaskManager> taskManager(@Autowired Dispatcher dispatcher) {
+        return new DispatchProxyFactory<TaskManager>(TaskManager.class, dispatcher);
     }
 }
