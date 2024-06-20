@@ -48,6 +48,10 @@ public class BaseState implements State, BeanNameAware {
         this.name = name;
     }
 
+    public BaseState(State parentState) {
+        this.parentState = parentState;
+    }
+
     public BaseState(String name, State parentState) {
         this.name = name;
         this.parentState = parentState;
