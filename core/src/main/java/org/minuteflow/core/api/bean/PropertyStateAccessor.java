@@ -81,7 +81,6 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
 
     @Override
     protected void setStatesImpl(Entity entity, Set<State> states) throws EntityUpdateRejectedException {
-        PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
         Map<String, Object> entityProperties = new HashMap<String, Object>();
         //
         for (State state : SetUtils.emptyIfNull(states)) {
@@ -95,6 +94,7 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
             }
         }
         //
+        PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
         for (Map.Entry<String, Object> entityEntry : entityProperties.entrySet()) {
             entityPropertyAccessor.setPropertyValue(entityEntry.getKey(), entityEntry.getValue());
         }
