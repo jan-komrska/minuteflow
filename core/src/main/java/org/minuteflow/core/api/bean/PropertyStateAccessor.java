@@ -95,8 +95,8 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
             }
         }
         //
-        for (Map.Entry<String, Object> sourceEntry : properties.entrySet()) {
-            entityPropertyAccessor.setPropertyValue(sourceEntry.getKey(), sourceEntry.getValue());
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            entityPropertyAccessor.setPropertyValue(entry.getKey(), entry.getValue());
         }
     }
 
