@@ -41,6 +41,10 @@ public class BaseCalculatedState extends BaseState implements CalculatedState {
         super(name);
     }
 
+    public BaseCalculatedState(State parentState) {
+        super(parentState);
+    }
+
     public BaseCalculatedState(String name, State parentState) {
         super(name, parentState);
     }

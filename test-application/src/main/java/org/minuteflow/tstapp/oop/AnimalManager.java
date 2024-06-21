@@ -23,6 +23,10 @@ package org.minuteflow.tstapp.oop;
 import org.minuteflow.core.api.annotation.EntityRef;
 
 public interface AnimalManager {
+    public default void move(@EntityRef AnimalEntity animal) {
+        throw new UnsupportedOperationException();
+    }
+
     public default void makeSound(@EntityRef AnimalEntity animal) {
         throw new UnsupportedOperationException();
     }

@@ -93,7 +93,9 @@ public class Application {
         cat.setName("Molly");
         cat.setType(AnimalEntityType.CAT);
         //
+        animalManager.move(dog);
         animalManager.makeSound(dog);
+        animalManager.move(cat);
         animalManager.makeSound(cat);
     }
 

@@ -53,15 +53,15 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
     @Override
     protected Set<State> getStatesImpl(Entity entity) {
         Set<State> appliedStates = new HashSet<State>();
-        PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
         //
+        PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
         for (State managedState : SetUtils.emptyIfNull(managedStates)) {
             if (managedState instanceof PropertyState propertyState) {
                 boolean applied = true;
                 //
-                for (Map.Entry<String, Object> targetEntry : propertyState.getProperties().entrySet()) {
-                    Object sourceValue = entityPropertyAccessor.getPropertyValue(targetEntry.getKey());
-                    applied = applied && Objects.equals(sourceValue, targetEntry.getValue());
+                for (Map.Entry<String, Object> stateEntry : propertyState.getProperties().entrySet()) {
+                    Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
+                    applied = applied && Objects.equals(entityValue, stateEntry.getValue());
                 }
                 //
                 if (applied) {
@@ -81,13 +81,12 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
 
     @Override
     protected void setStatesImpl(Entity entity, Set<State> states) throws EntityUpdateRejectedException {
-        PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
+        Map<String, Object> entityProperties = new HashMap<String, Object>();
         //
-        Map<String, Object> properties = new HashMap<String, Object>();
         for (State state : SetUtils.emptyIfNull(states)) {
             if (state instanceof PropertyState propertyState) {
-                for (Map.Entry<String, Object> sourceEntry : propertyState.getProperties().entrySet()) {
-                    Object previousValue = properties.putIfAbsent(sourceEntry.getKey(), sourceEntry.getValue());
+                for (Map.Entry<String, Object> stateEntry : propertyState.getProperties().entrySet()) {
+                    Object previousValue = entityProperties.putIfAbsent(stateEntry.getKey(), stateEntry.getValue());
                     if (previousValue != null) {
                         throw new EntityUpdateRejectedException();
                     }
@@ -95,8 +94,9 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
             }
         }
         //
-        for (Map.Entry<String, Object> sourceEntry : properties.entrySet()) {
-            entityPropertyAccessor.setPropertyValue(sourceEntry.getKey(), sourceEntry.getValue());
+        PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
+        for (Map.Entry<String, Object> entityEntry : entityProperties.entrySet()) {
+            entityPropertyAccessor.setPropertyValue(entityEntry.getKey(), entityEntry.getValue());
         }
     }
 

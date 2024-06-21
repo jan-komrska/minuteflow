@@ -24,6 +24,7 @@ import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
+import org.minuteflow.core.api.bean.BaseState;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
 import org.minuteflow.core.api.bean.PropertyStateAccessor;
 import org.minuteflow.core.api.contract.Dispatcher;
@@ -42,13 +43,18 @@ import lombok.extern.slf4j.Slf4j;
 @Import(MinuteFlowConfiguration.class)
 public class AnimalConfiguration {
     @Bean
+    public State animalStateMammal() {
+        return new BaseState();
+    }
+
+    @Bean
     public State animalStateDog() {
-        return new BasePropertyState().withProperty("type", AnimalEntityType.DOG);
+        return new BasePropertyState(animalStateMammal()).withProperty("type", AnimalEntityType.DOG);
     }
 
     @Bean
     public State animalStateCat() {
-        return new BasePropertyState().withProperty("type", AnimalEntityType.CAT);
+        return new BasePropertyState(animalStateMammal()).withProperty("type", AnimalEntityType.CAT);
     }
 
     @Bean
@@ -57,6 +63,18 @@ public class AnimalConfiguration {
     }
 
     //
+
+    @ControllerRef("animalStateMammal")
+    @Bean
+    public AnimalManager animalManagerStateMammal() {
+        return new AnimalManager() {
+            @Override
+            @ActionRef
+            public void move(AnimalEntity animal) {
+                log.info(animal + " is moving.");
+            }
+        };
+    }
 
     @ControllerRef("animalStateDog")
     @Bean
