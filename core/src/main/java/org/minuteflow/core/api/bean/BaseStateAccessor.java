@@ -63,7 +63,8 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
 
     public void setStates(Object entity, Set<State> states) throws EntityUpdateRejectedException {
         if (isSupported(entity)) {
-            states = removeCalculatedStates(states);
+            states = new HashSet<State>(SetUtils.emptyIfNull(states));
+            removeCalculatedStates(states);
             setStatesImpl(entityClass.cast(entity), states);
         } else {
             throw new IllegalArgumentException();
@@ -89,10 +90,8 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
         });
     }
 
-    protected Set<State> removeCalculatedStates(Set<State> allStates) {
-        HashSet<State> states = new HashSet<State>(SetUtils.emptyIfNull(allStates));
-        states.removeIf((state) -> (state instanceof CalculatedState));
-        return states;
+    protected void removeCalculatedStates(Set<State> states) {
+        CollectionUtils.filter(states, (state) -> !(state instanceof CalculatedState));
     }
 
     //
