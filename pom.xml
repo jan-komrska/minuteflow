@@ -6,7 +6,7 @@
 
     <groupId>org.minuteflow</groupId>
     <artifactId>minuteflow-parent</artifactId>
-    <version>0.3.9-SNAPSHOT</version>
+    <version>0.3.9</version>
     <packaging>pom</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
