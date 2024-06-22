@@ -17,6 +17,13 @@ of the embedded workflow in micro-services  (see [simple flow](https://github.co
 For more info please check project [wiki](https://github.com/jan-komrska/minuteflow/wiki)
 or three examples in *test-application* module in the repository.
 
+## Tutorial
+
+Please check following examples:
+1. [object-oriented features](https://github.com/jan-komrska/minuteflow/wiki/OOP-Example)
+2. [simple flow with enum state](https://github.com/jan-komrska/minuteflow/wiki/Simple-Example)
+3. [flow with parallel states](https://github.com/jan-komrska/minuteflow/wiki/Parallel-States-Example)
+
 ## Installation
 
 *MinuteFlow* packages are stored in [maven central repository](https://repo1.maven.org/maven2/org/minuteflow/minuteflow-core/).  
