@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.contract.State;
 import org.springframework.beans.factory.BeanNameAware;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +33,7 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BaseState implements State, BeanNameAware {
-    @Setter
+    @Setter(AccessLevel.PROTECTED)
     private String name = null;
 
     @Getter
@@ -44,16 +45,7 @@ public class BaseState implements State, BeanNameAware {
     public BaseState() {
     }
 
-    public BaseState(String name) {
-        this.name = name;
-    }
-
     public BaseState(State parentState) {
-        this.parentState = parentState;
-    }
-
-    public BaseState(String name, State parentState) {
-        this.name = name;
         this.parentState = parentState;
     }
 
