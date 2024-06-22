@@ -20,9 +20,7 @@ package org.minuteflow.core.impl.repository;
  * =========================LICENSE_END==================================
  */
 
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.minuteflow.core.api.contract.State;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +38,6 @@ public class StateRepository {
     @Autowired
     private ApplicationContext applicationContext = null;
 
-    private Map<String, String> stateMap = new ConcurrentHashMap<String, String>();
-
     //
 
     public StateRepository() {
@@ -50,9 +46,8 @@ public class StateRepository {
     //
 
     public State getState(String stateName) {
-        if (stateMap.containsKey(stateName)) {
-            String beanName = stateMap.get(stateName);
-            return applicationContext.getBean(beanName, State.class);
+        if (applicationContext.containsBean(stateName)) {
+            return applicationContext.getBean(stateName, State.class);
         } else {
             return null;
         }
@@ -62,8 +57,7 @@ public class StateRepository {
         Objects.requireNonNull(state);
         Objects.requireNonNull(beanName);
         //
-        String registeredBeanName = stateMap.putIfAbsent(state.getName(), beanName);
-        if (Objects.isNull(registeredBeanName)) {
+        if (Objects.equals(state.getName(), beanName)) {
             log.debug("registered state [" + state.getName() + "] implemenented by [" + beanName + "]");
         } else {
             throw new IllegalStateException();
@@ -73,10 +67,6 @@ public class StateRepository {
     public void removeState(State state, String beanName) {
         Objects.requireNonNull(state);
         Objects.requireNonNull(beanName);
-        //
-        boolean removed = stateMap.remove(state.getName(), beanName);
-        if (removed) {
-            log.debug("unregistered state [" + state.getName() + "]");
-        }
+        log.debug("unregistered state [" + state.getName() + "]");
     }
 }
