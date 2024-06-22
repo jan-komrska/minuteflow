@@ -100,6 +100,11 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
         }
     }
 
+    public PropertyStateAccessor<Entity> withManagedStates(Set<State> managedStates) {
+        setManagedStates(managedStates);
+        return this;
+    }
+
     public PropertyStateAccessor<Entity> withManagedStates(State... managedStates) {
         setManagedStates((managedStates != null) ? Set.of(managedStates) : null);
         return this;

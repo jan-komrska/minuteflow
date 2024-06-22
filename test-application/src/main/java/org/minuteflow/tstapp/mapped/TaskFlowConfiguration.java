@@ -29,6 +29,7 @@ import org.minuteflow.core.api.bean.PropertyStateAccessor;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
+import org.minuteflow.core.api.contract.StateCollection;
 import org.minuteflow.core.api.contract.StateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -58,8 +59,9 @@ public class TaskFlowConfiguration {
     }
 
     @Bean
-    public StateAccessor taskStateAccessor() {
-        return new PropertyStateAccessor<TaskEntity>(TaskEntity.class).withManagedStates(taskStateOpen(), taskStateInProgress(), taskStateDone());
+    public StateAccessor taskStateAccessor(@Autowired StateCollection stateCollection) {
+        return new PropertyStateAccessor<TaskEntity>(TaskEntity.class). //
+                withManagedStates(stateCollection.getAllStates("taskState*"));
     }
 
     //
