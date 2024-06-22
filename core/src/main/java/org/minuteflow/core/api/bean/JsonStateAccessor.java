@@ -21,7 +21,6 @@ package org.minuteflow.core.api.bean;
  */
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -49,8 +48,8 @@ public class JsonStateAccessor<Entity> extends BaseStateAccessor<Entity> {
     private ObjectMapper objectMapper;
 
     private Set<State> managedStates = null;
-    private Set<State> calculatedStates = new HashSet<State>();
-    private Map<String, State> persistentStates = new HashMap<String, State>();
+    private Set<State> calculatedStates = Collections.emptySet();
+    private Map<String, State> persistentStates = Collections.emptyMap();
 
     @Getter
     @Setter
