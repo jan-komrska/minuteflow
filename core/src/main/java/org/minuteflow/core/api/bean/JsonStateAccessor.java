@@ -1,8 +1,5 @@
 package org.minuteflow.core.api.bean;
 
-import java.util.Collections;
-import java.util.HashMap;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -23,6 +20,8 @@ import java.util.HashMap;
  * =========================LICENSE_END==================================
  */
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
