@@ -32,6 +32,7 @@ import org.minuteflow.core.api.contract.Controller;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
+import org.minuteflow.core.api.contract.StateCollection;
 import org.minuteflow.core.api.contract.StateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -60,12 +61,10 @@ public class OrderFlowConfiguration {
     }
 
     @Bean
-    public StateAccessor orderStateAccessor() {
-        var accessor = new JsonStateAccessor<OrderEntity>(OrderEntity.class);
-        accessor.setStateGetter(OrderEntity::getStates);
-        accessor.setStateSetter(OrderEntity::setStates);
-        accessor.setCalculatedStates(orderStatePaPDone(), orderStatePaPNotDone());
-        return accessor;
+    public StateAccessor orderStateAccessor(@Autowired StateCollection stateCollection) {
+        return new JsonStateAccessor<OrderEntity>(OrderEntity.class). //
+                withAccessors(OrderEntity::getStates, OrderEntity::setStates). //
+                withManagedStates(stateCollection.getAllStates("orderState*"));
     }
 
     //
