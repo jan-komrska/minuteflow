@@ -1,5 +1,7 @@
 package org.minuteflow.core.impl.repository;
 
+import java.util.Arrays;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -21,13 +23,17 @@ package org.minuteflow.core.impl.repository;
  */
 
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.contract.State;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,9 +44,14 @@ public class StateRepository {
     @Autowired
     private ApplicationContext applicationContext = null;
 
+    private AntPathMatcher antPathMatcher = null;
+
     //
 
     public StateRepository() {
+        antPathMatcher = new AntPathMatcher();
+        antPathMatcher.setCachePatterns(true);
+        antPathMatcher.setCaseSensitive(true);
     }
 
     //
@@ -51,6 +62,14 @@ public class StateRepository {
         } else {
             return null;
         }
+    }
+
+    public Set<State> getAllStates(String pattern) {
+        String[] stateNames = applicationContext.getBeanNamesForType(State.class);
+        return Arrays.stream(ArrayUtils.nullToEmpty(stateNames)). //
+                filter((stateName) -> antPathMatcher.match(pattern, stateName)). //
+                map((stateName) -> applicationContext.getBean(stateName, State.class)). //
+                collect(Collectors.toSet());
     }
 
     public void addState(State state, String beanName) {

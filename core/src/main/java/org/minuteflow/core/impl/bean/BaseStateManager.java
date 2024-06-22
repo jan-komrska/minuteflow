@@ -67,6 +67,11 @@ public class BaseStateManager implements StateManager {
         return stateRepository.getState(stateName);
     }
 
+    @Override
+    public Set<State> getAllStates(String pattern) {
+        return stateRepository.getAllStates(pattern);
+    }
+
     private StateAccessor findStateAccessor(Object entity) throws EntityNotSupportedException {
         for (String activeGroupName : activeGroupNames) {
             Class<?> entityClass = (entity != null) ? entity.getClass() : null;
