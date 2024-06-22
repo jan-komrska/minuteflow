@@ -42,16 +42,8 @@ public class BasePropertyState extends BaseState implements PropertyState {
         super();
     }
 
-    public BasePropertyState(String name) {
-        super(name);
-    }
-
     public BasePropertyState(State parentState) {
         super(parentState);
-    }
-
-    public BasePropertyState(String name, State parentState) {
-        super(name, parentState);
     }
 
     //

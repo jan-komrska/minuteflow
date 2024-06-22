@@ -30,6 +30,7 @@ import org.minuteflow.core.api.bean.PropertyStateAccessor;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
+import org.minuteflow.core.api.contract.StateCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,8 +59,9 @@ public class AnimalConfiguration {
     }
 
     @Bean
-    public StateAccessor animalStateAccessor() {
-        return new PropertyStateAccessor<AnimalEntity>(AnimalEntity.class).withManagedStates(animalStateCat(), animalStateDog());
+    public StateAccessor animalStateAccessor(@Autowired StateCollection stateCollection) {
+        return new PropertyStateAccessor<AnimalEntity>(AnimalEntity.class). //
+                withManagedStates(stateCollection.getAllStates("animalState*"));
     }
 
     //

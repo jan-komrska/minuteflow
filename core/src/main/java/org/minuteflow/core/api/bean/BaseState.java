@@ -32,7 +32,6 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class BaseState implements State, BeanNameAware {
-    @Setter
     private String name = null;
 
     @Getter
@@ -44,16 +43,7 @@ public class BaseState implements State, BeanNameAware {
     public BaseState() {
     }
 
-    public BaseState(String name) {
-        this.name = name;
-    }
-
     public BaseState(State parentState) {
-        this.parentState = parentState;
-    }
-
-    public BaseState(String name, State parentState) {
-        this.name = name;
         this.parentState = parentState;
     }
 
@@ -67,8 +57,6 @@ public class BaseState implements State, BeanNameAware {
 
     @Override
     public void setBeanName(String beanName) {
-        if (getName().isEmpty()) {
-            setName(beanName);
-        }
+        this.name = beanName;
     }
 }

@@ -1,5 +1,7 @@
 package org.minuteflow.core.impl.repository;
 
+import java.util.Arrays;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -20,16 +22,18 @@ package org.minuteflow.core.impl.repository;
  * =========================LICENSE_END==================================
  */
 
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.contract.State;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,30 +44,39 @@ public class StateRepository {
     @Autowired
     private ApplicationContext applicationContext = null;
 
-    private Map<String, String> stateMap = new ConcurrentHashMap<String, String>();
+    private AntPathMatcher antPathMatcher = null;
 
     //
 
     public StateRepository() {
+        antPathMatcher = new AntPathMatcher();
+        antPathMatcher.setCachePatterns(true);
+        antPathMatcher.setCaseSensitive(true);
     }
 
     //
 
     public State getState(String stateName) {
-        if (stateMap.containsKey(stateName)) {
-            String beanName = stateMap.get(stateName);
-            return applicationContext.getBean(beanName, State.class);
+        if (applicationContext.containsBean(stateName)) {
+            return applicationContext.getBean(stateName, State.class);
         } else {
             return null;
         }
+    }
+
+    public Set<State> getAllStates(String pattern) {
+        String[] stateNames = applicationContext.getBeanNamesForType(State.class);
+        return Arrays.stream(ArrayUtils.nullToEmpty(stateNames)). //
+                filter((stateName) -> antPathMatcher.match(pattern, stateName)). //
+                map((stateName) -> applicationContext.getBean(stateName, State.class)). //
+                collect(Collectors.toSet());
     }
 
     public void addState(State state, String beanName) {
         Objects.requireNonNull(state);
         Objects.requireNonNull(beanName);
         //
-        String registeredBeanName = stateMap.putIfAbsent(state.getName(), beanName);
-        if (Objects.isNull(registeredBeanName)) {
+        if (Objects.equals(state.getName(), beanName)) {
             log.debug("registered state [" + state.getName() + "] implemenented by [" + beanName + "]");
         } else {
             throw new IllegalStateException();
@@ -73,10 +86,6 @@ public class StateRepository {
     public void removeState(State state, String beanName) {
         Objects.requireNonNull(state);
         Objects.requireNonNull(beanName);
-        //
-        boolean removed = stateMap.remove(state.getName(), beanName);
-        if (removed) {
-            log.debug("unregistered state [" + state.getName() + "]");
-        }
+        log.debug("unregistered state [" + state.getName() + "]");
     }
 }
