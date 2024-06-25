@@ -20,17 +20,6 @@ package org.minuteflow.core.api.annotation;
  * =========================LICENSE_END==================================
  */
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Repeatable(ControllerRefs.class)
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-public @interface ControllerRef {
-    public String value();
-
-    public StateBuilderRef stateBuilder() default @StateBuilderRef;
+public enum StateBuilderRefType {
+    NONE, AND, OR, NAND, NOR
 }
