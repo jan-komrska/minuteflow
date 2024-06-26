@@ -31,6 +31,8 @@ import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
 import org.minuteflow.core.api.annotation.ControllerRefs;
 import org.minuteflow.core.api.bean.BaseController;
+import org.minuteflow.core.api.bean.ExpressionState;
+import org.minuteflow.core.api.bean.ExpressionStateType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -71,7 +73,23 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerRefs;
     }
 
-    private void registerController(BeanDefinitionRegistry registry, String parentStateName, String serviceName) {
+    private String registerExpressionState(BeanDefinitionRegistry registry, String serviceName, ExpressionStateType type, String[] targetStateNames) {
+        String stateName = nextBeanName(serviceName, "state");
+        //
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(ExpressionState.class);
+        beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
+        beanDefinitionBuilder.setLazyInit(false);
+        beanDefinitionBuilder.addPropertyValue("type", type);
+        beanDefinitionBuilder.addPropertyValue("targetStateNames", targetStateNames);
+        //
+        registry.registerBeanDefinition(stateName, beanDefinitionBuilder.getBeanDefinition());
+        //
+        log.debug("Registered expression state [" + serviceName + "]");
+        //
+        return stateName;
+    }
+
+    private String registerController(BeanDefinitionRegistry registry, String parentStateName, String serviceName) {
         String controllerName = nextBeanName(serviceName, "controller");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
@@ -83,6 +101,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         registry.registerBeanDefinition(controllerName, beanDefinitionBuilder.getBeanDefinition());
         //
         log.debug("Registered controller [" + parentStateName, "," + serviceName + "]");
+        //
+        return controllerName;
     }
 
     @Override
@@ -103,9 +123,12 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     List<MergedAnnotation<ControllerRef>> controlleRefs = getControllerRefs(mergedAnnotations);
                     for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
                         ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
-                        String[] stateNames = controllerRef.getStringArray("value");
+                        String[] targetStateNames = controllerRef.getStringArray("value");
                         if (ControllerRefType.IDENTITY.equals(type)) {
-                            registerController(registry, stateNames[0], beanName);
+                            registerController(registry, targetStateNames[0], beanName);
+                        } else {
+                            String stateName = registerExpressionState(registry, beanName, ExpressionStateType.valueOf(type), targetStateNames);
+                            registerController(registry, stateName, beanName);
                         }
                     }
                 }

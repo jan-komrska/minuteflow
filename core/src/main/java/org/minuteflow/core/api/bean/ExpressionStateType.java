@@ -1,5 +1,7 @@
 package org.minuteflow.core.api.bean;
 
+import org.minuteflow.core.api.annotation.ControllerRefType;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -46,5 +48,17 @@ public enum ExpressionStateType {
 
     public boolean hasTagNot() {
         return tagNot;
+    }
+
+    //
+
+    public static ExpressionStateType valueOf(ControllerRefType type) {
+        return switch (type) {
+            case AND -> ExpressionStateType.AND;
+            case NAND -> ExpressionStateType.NAND;
+            case OR -> ExpressionStateType.OR;
+            case NOR -> ExpressionStateType.NOR;
+            case IDENTITY -> null;
+        };
     }
 }
