@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 public @interface ControllerRef {
-    public String value();
+    public ControllerRefType type() default ControllerRefType.IDENTITY;
 
-    public StateBuilderRef stateBuilder() default @StateBuilderRef;
+    public String[] value();
 }

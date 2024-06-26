@@ -20,6 +20,6 @@ package org.minuteflow.core.api.annotation;
  * =========================LICENSE_END==================================
  */
 
-public enum StateBuilderRefType {
-    NONE, AND, OR, NAND, NOR
+public enum ControllerRefType {
+    IDENTITY, AND, OR, NAND, NOR
 }
