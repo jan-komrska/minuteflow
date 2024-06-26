@@ -100,7 +100,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         //
         registry.registerBeanDefinition(controllerName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered controller [" + parentStateName, "," + serviceName + "]");
+        log.debug("Registered controller [" + controllerName + "]");
         //
         return controllerName;
     }
