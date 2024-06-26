@@ -38,12 +38,16 @@ public class ExpressionState extends BaseCalculatedState {
     private ExpressionStateType type;
     private String[] targetStateNames;
 
+    //
+
     public ExpressionState(ExpressionStateType type, String[] targetStateNames) {
         this.type = Objects.requireNonNull(type);
         this.targetStateNames = ArrayUtils.nullToEmpty(targetStateNames);
         //
         setPredicate(this::checkStates);
     }
+
+    //
 
     private boolean checkState(Set<String> sourceStateNames, String targetStateName) {
         targetStateName = StringUtils.defaultString(targetStateName);
