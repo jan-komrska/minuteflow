@@ -124,6 +124,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
                         ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
                         String[] targetStateNames = controllerRef.getStringArray("value");
+                        //
                         if (ControllerRefType.IDENTITY.equals(type)) {
                             if (targetStateNames.length == 1) {
                                 registerController(registry, targetStateNames[0], beanName);
