@@ -84,7 +84,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         //
         registry.registerBeanDefinition(stateName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered expression state [" + serviceName + "]");
+        log.debug("Registered expression state [" + stateName + "]");
         //
         return stateName;
     }
