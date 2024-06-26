@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.annotation.ControllerRef;
+import org.minuteflow.core.api.annotation.ControllerRefType;
 import org.minuteflow.core.api.annotation.ControllerRefs;
 import org.minuteflow.core.api.bean.BaseController;
 import org.springframework.beans.BeansException;
@@ -52,8 +53,8 @@ import lombok.extern.slf4j.Slf4j;
 public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProcessor, Ordered {
     private AtomicLong beanNameSequence = new AtomicLong(0);
 
-    public String nextBeanName(String type) {
-        return "minute-flow:" + type + ":" + beanNameSequence.addAndGet(1);
+    public String nextBeanName(String parentBeanName, String type) {
+        return parentBeanName + ":" + type + ":" + beanNameSequence.addAndGet(1);
     }
 
     //
@@ -71,7 +72,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
     }
 
     private void registerController(BeanDefinitionRegistry registry, String parentStateName, String serviceName) {
-        String controllerName = nextBeanName("controller");
+        String controllerName = nextBeanName(serviceName, "controller");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -101,7 +102,11 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     MergedAnnotations mergedAnnotations = metadata.getAnnotations();
                     List<MergedAnnotation<ControllerRef>> controlleRefs = getControllerRefs(mergedAnnotations);
                     for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
-                        registerController(registry, controllerRef.getString("value"), beanName);
+                        ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
+                        String[] stateNames = controllerRef.getStringArray("value");
+                        if (ControllerRefType.IDENTITY.equals(type)) {
+                            registerController(registry, stateNames[0], beanName);
+                        }
                     }
                 }
             }
