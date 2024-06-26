@@ -22,10 +22,11 @@ package org.minuteflow.tstapp.json;
 
 import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
-import org.minuteflow.core.api.bean.BaseCalculatedState;
 import org.minuteflow.core.api.bean.BaseController;
 import org.minuteflow.core.api.bean.BaseState;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
+import org.minuteflow.core.api.bean.ExpressionState;
+import org.minuteflow.core.api.bean.ExpressionStateType;
 import org.minuteflow.core.api.bean.JsonStateAccessor;
 import org.minuteflow.core.api.contract.CalculatedState;
 import org.minuteflow.core.api.contract.Controller;
@@ -101,12 +102,12 @@ public class OrderFlowConfiguration {
 
     @Bean
     public CalculatedState orderStatePaPDone() {
-        return new BaseCalculatedState().applyWhenContainsAll(orderStatePackagingDone(), orderStatePaymentDone());
+        return new ExpressionState(ExpressionStateType.AND, new String[] { "orderStatePackagingDone", "orderStatePaymentDone" });
     }
 
     @Bean
     public CalculatedState orderStatePaPNotDone() {
-        return new BaseCalculatedState().applyWhenNotContainsAll(orderStatePackagingDone(), orderStatePaymentDone());
+        return new ExpressionState(ExpressionStateType.NAND, new String[] { "orderStatePackagingDone", "orderStatePaymentDone" });
     }
 
     //

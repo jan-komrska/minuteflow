@@ -23,7 +23,6 @@ package org.minuteflow.core.api.bean;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.contract.CalculatedState;
 import org.minuteflow.core.api.contract.State;
 
@@ -48,17 +47,5 @@ public class BaseCalculatedState extends BaseState implements CalculatedState {
     @Override
     public boolean appliesTo(Set<State> states) {
         return (predicate != null) ? predicate.test(states) : false;
-    }
-
-    public BaseCalculatedState applyWhenContainsAll(State... targetStatesAsArray) {
-        Set<State> targetStates = Set.of(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
-        setPredicate((sourceStates) -> sourceStates.containsAll(targetStates));
-        return this;
-    }
-
-    public BaseCalculatedState applyWhenNotContainsAll(State... targetStatesAsArray) {
-        Set<State> targetStates = Set.of(ArrayUtils.nullToEmpty(targetStatesAsArray, State[].class));
-        setPredicate((sourceStates) -> !sourceStates.containsAll(targetStates));
-        return this;
     }
 }
