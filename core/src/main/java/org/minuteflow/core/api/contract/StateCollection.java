@@ -1,7 +1,5 @@
 package org.minuteflow.core.api.contract;
 
-import java.util.Set;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -22,8 +20,10 @@ import java.util.Set;
  * =========================LICENSE_END==================================
  */
 
+import java.util.Set;
+
 public interface StateCollection {
     public State valueOf(String stateName);
 
-    public Set<State> getAllStates(String pattern);
+    public Set<State> getAllStates(String... patterns);
 }

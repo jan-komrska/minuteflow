@@ -22,14 +22,11 @@ package org.minuteflow.tstapp.json;
 
 import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
-import org.minuteflow.core.api.bean.BaseController;
+import org.minuteflow.core.api.annotation.ControllerRef;
+import org.minuteflow.core.api.annotation.ControllerRefType;
 import org.minuteflow.core.api.bean.BaseState;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
-import org.minuteflow.core.api.bean.ExpressionState;
-import org.minuteflow.core.api.bean.ExpressionStateType;
 import org.minuteflow.core.api.bean.JsonStateAccessor;
-import org.minuteflow.core.api.contract.CalculatedState;
-import org.minuteflow.core.api.contract.Controller;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
@@ -65,7 +62,7 @@ public class OrderFlowConfiguration {
     public StateAccessor orderStateAccessor(@Autowired StateCollection stateCollection) {
         return new JsonStateAccessor<OrderEntity>(OrderEntity.class). //
                 withAccessors(OrderEntity::getStates, OrderEntity::setStates). //
-                withManagedStates(stateCollection.getAllStates("orderState*"));
+                withManagedStates(stateCollection.getAllStates("orderState*", "orderManager*"));
     }
 
     //
@@ -100,18 +97,9 @@ public class OrderFlowConfiguration {
         return new BaseState();
     }
 
-    @Bean
-    public CalculatedState orderStatePaPDone() {
-        return new ExpressionState(ExpressionStateType.AND, new String[] { "orderStatePackagingDone", "orderStatePaymentDone" });
-    }
-
-    @Bean
-    public CalculatedState orderStatePaPNotDone() {
-        return new ExpressionState(ExpressionStateType.NAND, new String[] { "orderStatePackagingDone", "orderStatePaymentDone" });
-    }
-
     //
 
+    @ControllerRef("orderStateOpen")
     @Bean
     public OrderManager orderManagerStateOpen() {
         return new OrderManager() {
@@ -128,11 +116,7 @@ public class OrderFlowConfiguration {
         };
     }
 
-    @Bean
-    public Controller orderControllerStateOpen() {
-        return new BaseController(orderStateOpen(), orderManagerStateOpen());
-    }
-
+    @ControllerRef("orderStatePaymentRequested")
     @Bean
     public OrderManager orderManagerStatePaymentRequested() {
         return new OrderManager() {
@@ -151,11 +135,7 @@ public class OrderFlowConfiguration {
         };
     }
 
-    @Bean
-    public Controller orderControllerStatePaymentRequested() {
-        return new BaseController(orderStatePaymentRequested(), orderManagerStatePaymentRequested());
-    }
-
+    @ControllerRef("orderStatePackagingRequested")
     @Bean
     public OrderManager orderManagerStatePackagingRequested() {
         return new OrderManager() {
@@ -174,11 +154,7 @@ public class OrderFlowConfiguration {
         };
     }
 
-    @Bean
-    public Controller orderControllerStatePackagingRequested() {
-        return new BaseController(orderStatePackagingRequested(), orderManagerStatePackagingRequested());
-    }
-
+    @ControllerRef(type = ControllerRefType.AND, value = { "orderStatePaymentDone", "orderStatePackagingDone" })
     @Bean
     public OrderManager orderManagerStatePaPDone() {
         return new OrderManager() {
@@ -195,11 +171,7 @@ public class OrderFlowConfiguration {
         };
     }
 
-    @Bean
-    public Controller orderControllerStatePaPDone() {
-        return new BaseController(orderStatePaPDone(), orderManagerStatePaPDone());
-    }
-
+    @ControllerRef(type = ControllerRefType.NAND, value = { "orderStatePaymentDone", "orderStatePackagingDone" })
     @Bean
     public OrderManager orderManagerStatePaPNotDone() {
         return new OrderManager() {
@@ -209,10 +181,5 @@ public class OrderFlowConfiguration {
                 log.info("(ignore) finishOrder: " + order);
             }
         };
-    }
-
-    @Bean
-    public Controller orderControllerStatePaPNotDone() {
-        return new BaseController(orderStatePaPNotDone(), orderManagerStatePaPNotDone());
     }
 }
