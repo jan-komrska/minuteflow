@@ -125,7 +125,11 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                         ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
                         String[] targetStateNames = controllerRef.getStringArray("value");
                         if (ControllerRefType.IDENTITY.equals(type)) {
-                            registerController(registry, targetStateNames[0], beanName);
+                            if (targetStateNames.length == 1) {
+                                registerController(registry, targetStateNames[0], beanName);
+                            } else {
+                                throw new IllegalArgumentException();
+                            }
                         } else {
                             String stateName = registerExpressionState(registry, beanName, ExpressionStateType.valueOf(type), targetStateNames);
                             registerController(registry, stateName, beanName);
