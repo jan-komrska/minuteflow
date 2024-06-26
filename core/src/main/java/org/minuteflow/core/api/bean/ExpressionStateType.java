@@ -58,7 +58,7 @@ public enum ExpressionStateType {
             case NAND -> ExpressionStateType.NAND;
             case OR -> ExpressionStateType.OR;
             case NOR -> ExpressionStateType.NOR;
-            case IDENTITY -> null;
+            default -> null;
         };
     }
 }
