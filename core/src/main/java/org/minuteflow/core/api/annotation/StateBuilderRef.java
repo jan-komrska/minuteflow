@@ -20,6 +20,10 @@ package org.minuteflow.core.api.annotation;
  * =========================LICENSE_END==================================
  */
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)
 public @interface StateBuilderRef {
     public StateBuilderRefType type() default StateBuilderRefType.NONE;
 
