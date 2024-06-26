@@ -40,16 +40,22 @@ public class ExpressionState extends BaseCalculatedState {
 
     //
 
+    public ExpressionState() {
+        setPredicate((sourceStates) -> {
+            return checkStates(sourceStates, getType(), getTargetStateNames());
+        });
+    }
+
     public ExpressionState(ExpressionStateType type, String[] targetStateNames) {
-        this.type = Objects.requireNonNull(type);
-        this.targetStateNames = ArrayUtils.nullToEmpty(targetStateNames);
+        this();
         //
-        setPredicate(this::checkStates);
+        setType(type);
+        setTargetStateNames(targetStateNames);
     }
 
     //
 
-    private boolean checkState(Set<String> sourceStateNames, String targetStateName) {
+    private static boolean checkState(Set<String> sourceStateNames, String targetStateName) {
         targetStateName = StringUtils.defaultString(targetStateName);
         //
         boolean negation = targetStateName.startsWith("!");
@@ -58,7 +64,10 @@ public class ExpressionState extends BaseCalculatedState {
         return (negation) ? !exists : exists;
     }
 
-    private boolean checkStates(Set<State> sourceStates) {
+    private static boolean checkStates(Set<State> sourceStates, ExpressionStateType type, String[] targetStateNames) {
+        type = Objects.requireNonNull(type);
+        targetStateNames = ArrayUtils.nullToEmpty(targetStateNames);
+        //
         Set<String> sourceStateNames = SetUtils.emptyIfNull(sourceStates).stream(). //
                 map(State::getName).collect(Collectors.toUnmodifiableSet());
         //
