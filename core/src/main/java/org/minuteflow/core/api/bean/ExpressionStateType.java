@@ -1,7 +1,5 @@
 package org.minuteflow.core.api.bean;
 
-import org.minuteflow.core.api.annotation.ControllerRefType;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -21,6 +19,8 @@ import org.minuteflow.core.api.annotation.ControllerRefType;
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
+
+import org.minuteflow.core.api.annotation.ControllerRefType;
 
 public enum ExpressionStateType {
     AND(true, false, false), NAND(true, false, true), //
@@ -58,7 +58,7 @@ public enum ExpressionStateType {
             case NAND -> ExpressionStateType.NAND;
             case OR -> ExpressionStateType.OR;
             case NOR -> ExpressionStateType.NOR;
-            case IDENTITY -> null;
+            default -> null;
         };
     }
 }
