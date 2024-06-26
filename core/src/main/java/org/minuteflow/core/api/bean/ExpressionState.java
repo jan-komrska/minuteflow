@@ -61,6 +61,7 @@ public class ExpressionState extends BaseCalculatedState {
     private boolean checkStates(Set<State> sourceStates) {
         Set<String> sourceStateNames = SetUtils.emptyIfNull(sourceStates).stream(). //
                 map(State::getName).collect(Collectors.toUnmodifiableSet());
+        //
         boolean result = (type.hasTagAnd()) ? true : false;
         for (String targetStateName : targetStateNames) {
             if (type.hasTagAnd()) {
