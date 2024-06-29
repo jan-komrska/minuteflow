@@ -30,7 +30,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
 import org.minuteflow.core.api.annotation.ControllerRefs;
+import org.minuteflow.core.api.annotation.MinuteServiceRef;
+import org.minuteflow.core.api.annotation.MinuteServiceRefs;
 import org.minuteflow.core.api.bean.BaseController;
+import org.minuteflow.core.api.bean.DispatchProxyFactory;
 import org.minuteflow.core.api.bean.ExpressionState;
 import org.minuteflow.core.api.bean.ExpressionStateType;
 import org.springframework.beans.BeansException;
@@ -105,6 +108,35 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerName;
     }
 
+    private List<MergedAnnotation<MinuteServiceRef>> getMinuteServiceRefs(MergedAnnotations mergedAnnotations) {
+        ArrayList<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = new ArrayList<MergedAnnotation<MinuteServiceRef>>();
+        //
+        mergedAnnotations.stream(MinuteServiceRefs.class).flatMap((annotation) -> {
+            return Arrays.stream(annotation.getAnnotationArray("value", MinuteServiceRef.class));
+        }).forEach(minuteServiceRefs::add);
+        //
+        mergedAnnotations.stream(MinuteServiceRef.class).forEach(minuteServiceRefs::add);
+        //
+        return minuteServiceRefs;
+    }
+
+    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, Class<?> serviceClass) {
+        String minuteServiceName = nextBeanName(parentBeanName, "minute-service");
+        //
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(DispatchProxyFactory.class);
+        beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
+        beanDefinitionBuilder.setPrimary(true);
+        beanDefinitionBuilder.setLazyInit(false);
+        beanDefinitionBuilder.addConstructorArgValue(serviceClass);
+        beanDefinitionBuilder.addConstructorArgReference("org.minuteflow.core.impl.bean.BaseDispatcher");
+        //
+        registry.registerBeanDefinition(minuteServiceName, beanDefinitionBuilder.getBeanDefinition());
+        //
+        log.debug("Registered minute service [" + minuteServiceName + "]");
+        //
+        return minuteServiceName;
+    }
+
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         String[] beanNames = ArrayUtils.nullToEmpty(registry.getBeanDefinitionNames());
@@ -120,6 +152,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                 //
                 if (metadata != null) {
                     MergedAnnotations mergedAnnotations = metadata.getAnnotations();
+                    //
                     List<MergedAnnotation<ControllerRef>> controlleRefs = getControllerRefs(mergedAnnotations);
                     for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
                         ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
@@ -135,6 +168,12 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                             String stateName = registerExpressionState(registry, beanName, ExpressionStateType.valueOf(type), targetStateNames);
                             registerController(registry, stateName, beanName);
                         }
+                    }
+                    //
+                    List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = getMinuteServiceRefs(mergedAnnotations);
+                    for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
+                        Class<?> serviceClass = minuteServiceRef.getClass("value");
+                        registerMinuteService(registry, beanName, serviceClass);
                     }
                 }
             }

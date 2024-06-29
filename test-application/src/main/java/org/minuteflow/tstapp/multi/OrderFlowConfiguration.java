@@ -24,10 +24,9 @@ import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
+import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
-import org.minuteflow.core.api.bean.DispatchProxyFactory;
 import org.minuteflow.core.api.bean.PropertyStateAccessor;
-import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
 import org.minuteflow.core.api.contract.StateCollection;
@@ -36,27 +35,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
 @Import(MinuteFlowConfiguration.class)
+@MinuteServiceRef(OrderManager.class)
 public class OrderFlowConfiguration {
     @Autowired
     private StateManager stateManager;
 
-    @Autowired
-    private Dispatcher dispatcher;
-
     //
-
-    @Primary
-    @Bean
-    public DispatchProxyFactory<OrderManager> orderManager() {
-        return new DispatchProxyFactory<OrderManager>(OrderManager.class, dispatcher);
-    }
 
     @Bean
     public StateAccessor orderStateAccessor(@Autowired StateCollection stateCollection) {

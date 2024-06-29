@@ -23,10 +23,9 @@ package org.minuteflow.tstapp.simple;
 import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
 import org.minuteflow.core.api.annotation.ControllerRef;
+import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
-import org.minuteflow.core.api.bean.DispatchProxyFactory;
 import org.minuteflow.core.api.bean.PropertyStateAccessor;
-import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
 import org.minuteflow.core.api.contract.StateCollection;
@@ -35,13 +34,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
 @Import(MinuteFlowConfiguration.class)
+@MinuteServiceRef(TaskManager.class)
 public class TaskFlowConfiguration {
     @Bean
     public State taskStateOpen() {
@@ -92,11 +91,5 @@ public class TaskFlowConfiguration {
                 log.info("  - updated: " + task);
             }
         };
-    }
-
-    @Primary
-    @Bean
-    public DispatchProxyFactory<TaskManager> taskManager(@Autowired Dispatcher dispatcher) {
-        return new DispatchProxyFactory<TaskManager>(TaskManager.class, dispatcher);
     }
 }
