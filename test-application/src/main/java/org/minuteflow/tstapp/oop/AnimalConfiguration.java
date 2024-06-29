@@ -23,14 +23,11 @@ package org.minuteflow.tstapp.oop;
 import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
 import org.minuteflow.core.api.annotation.ControllerRef;
+import org.minuteflow.core.api.annotation.MinuteEntityRef;
 import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
 import org.minuteflow.core.api.bean.BaseState;
-import org.minuteflow.core.api.bean.PropertyStateAccessor;
 import org.minuteflow.core.api.contract.State;
-import org.minuteflow.core.api.contract.StateAccessor;
-import org.minuteflow.core.api.contract.StateCollection;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -41,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @Import(MinuteFlowConfiguration.class)
 @MinuteServiceRef(AnimalManager.class)
+@MinuteEntityRef(entityClass = AnimalEntity.class, statePattern = "animalState*")
 public class AnimalConfiguration {
     @Bean
     public State animalStateMammal() {
@@ -55,12 +53,6 @@ public class AnimalConfiguration {
     @Bean
     public State animalStateCat() {
         return new BasePropertyState(animalStateMammal()).withProperty("type", AnimalEntityType.CAT);
-    }
-
-    @Bean
-    public StateAccessor animalStateAccessor(@Autowired StateCollection stateCollection) {
-        return new PropertyStateAccessor<AnimalEntity>(AnimalEntity.class). //
-                withManagedStates(stateCollection.getAllStates("animalState*"));
     }
 
     //

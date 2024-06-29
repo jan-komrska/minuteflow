@@ -32,5 +32,5 @@ import java.lang.annotation.Target;
 public @interface MinuteEntityRef {
     public Class<?> entityClass();
 
-    public String[] statePatterns();
+    public String[] statePattern();
 }

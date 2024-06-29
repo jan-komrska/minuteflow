@@ -23,12 +23,10 @@ package org.minuteflow.tstapp.simple;
 import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
 import org.minuteflow.core.api.annotation.ControllerRef;
+import org.minuteflow.core.api.annotation.MinuteEntityRef;
 import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
-import org.minuteflow.core.api.bean.PropertyStateAccessor;
 import org.minuteflow.core.api.contract.State;
-import org.minuteflow.core.api.contract.StateAccessor;
-import org.minuteflow.core.api.contract.StateCollection;
 import org.minuteflow.core.api.contract.StateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @Import(MinuteFlowConfiguration.class)
 @MinuteServiceRef(TaskManager.class)
+@MinuteEntityRef(entityClass = TaskEntity.class, statePattern = "taskState*")
 public class TaskFlowConfiguration {
     @Bean
     public State taskStateOpen() {
@@ -55,12 +54,6 @@ public class TaskFlowConfiguration {
     @Bean
     public State taskStateDone() {
         return new BasePropertyState().withProperty("state", TaskEntityState.DONE);
-    }
-
-    @Bean
-    public StateAccessor taskStateAccessor(@Autowired StateCollection stateCollection) {
-        return new PropertyStateAccessor<TaskEntity>(TaskEntity.class). //
-                withManagedStates(stateCollection.getAllStates("taskState*"));
     }
 
     //

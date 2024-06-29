@@ -32,6 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
 import org.minuteflow.core.api.annotation.ControllerRefs;
+import org.minuteflow.core.api.annotation.MinuteEntityRef;
+import org.minuteflow.core.api.annotation.MinuteEntityRefs;
 import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.annotation.MinuteServiceRefs;
 import org.minuteflow.core.api.bean.BaseController;
@@ -115,6 +117,22 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return minuteServiceName;
     }
 
+    private String registerMinuteEntity(BeanDefinitionRegistry registry, String parentBeanName, Class<?> entityClass, String[] statePatterns) {
+        String minuteEntityName = nextBeanName(parentBeanName, "minute-entity");
+        //
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(MinuteFlowStateAccessor.class);
+        beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
+        beanDefinitionBuilder.setLazyInit(false);
+        beanDefinitionBuilder.addConstructorArgValue(entityClass);
+        beanDefinitionBuilder.addConstructorArgValue(statePatterns);
+        //
+        registry.registerBeanDefinition(minuteEntityName, beanDefinitionBuilder.getBeanDefinition());
+        //
+        log.debug("Registered minute entity [" + minuteEntityName + "]");
+        //
+        return minuteEntityName;
+    }
+
     private <TargetAnnotation extends Annotation> List<MergedAnnotation<TargetAnnotation>> getAnnotations( //
             MergedAnnotations mergedAnnotations, Class<TargetAnnotation> targetAnnotationClass, //
             Class<? extends Annotation> targetRepeatableAnnotationClass) {
@@ -168,6 +186,14 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
                         Class<?> serviceClass = minuteServiceRef.getClass("value");
                         registerMinuteService(registry, beanName, serviceClass);
+                    }
+                    //
+                    List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
+                            getAnnotations(mergedAnnotations, MinuteEntityRef.class, MinuteEntityRefs.class);
+                    for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
+                        Class<?> entityClass = minuteEntityRef.getClass("entityClass");
+                        String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
+                        registerMinuteEntity(registry, beanName, entityClass, statePatterns);
                     }
                 }
             }
