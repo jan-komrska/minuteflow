@@ -21,7 +21,7 @@ package org.minuteflow.core.api.contract;
  */
 
 public interface PropertyEntry {
-    public Object getKey();
+    public String getKey();
 
-    public String getValue();
+    public Object getValue();
 }

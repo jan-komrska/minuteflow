@@ -23,5 +23,5 @@ package org.minuteflow.core.api.contract;
 import java.util.Map;
 
 public interface PropertyState extends State {
-    public Map<String, Object> getProperties();
+    public Map<String, PropertyEntry> getProperties();
 }
