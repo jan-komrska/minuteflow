@@ -54,7 +54,6 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
         if (isSupported(entity)) {
             Set<State> states = new HashSet<State>(SetUtils.emptyIfNull( //
                     getStatesImpl(entityClass.cast(entity))));
-            filterCalculatedStates(states);
             return states;
         } else {
             throw new IllegalArgumentException();
@@ -76,19 +75,6 @@ public abstract class BaseStateAccessor<Entity> implements StateAccessor {
     protected abstract Set<State> getStatesImpl(Entity entity);
 
     protected abstract void setStatesImpl(Entity entity, Set<State> states) throws EntityUpdateRejectedException;
-
-    protected void filterCalculatedStates(Set<State> states) {
-        Set<State> persistentStates = new HashSet<>(SetUtils.emptyIfNull(states));
-        CollectionUtils.filter(persistentStates, (state) -> !(state instanceof CalculatedState));
-        //
-        CollectionUtils.filter(states, (state) -> {
-            if (state instanceof CalculatedState calculatedState) {
-                return calculatedState.appliesTo(persistentStates);
-            } else {
-                return true;
-            }
-        });
-    }
 
     protected void removeCalculatedStates(Set<State> states) {
         CollectionUtils.filter(states, (state) -> !(state instanceof CalculatedState));
