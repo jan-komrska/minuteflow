@@ -1,4 +1,4 @@
-package org.minuteflow.tstapp.json;
+package org.minuteflow.tstapp.multi;
 
 /*-
  * ========================LICENSE_START=================================
@@ -24,9 +24,9 @@ import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
-import org.minuteflow.core.api.bean.BaseState;
+import org.minuteflow.core.api.bean.BasePropertyState;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
-import org.minuteflow.core.api.bean.JsonStateAccessor;
+import org.minuteflow.core.api.bean.PropertyStateAccessor;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
@@ -60,8 +60,7 @@ public class OrderFlowConfiguration {
 
     @Bean
     public StateAccessor orderStateAccessor(@Autowired StateCollection stateCollection) {
-        return new JsonStateAccessor<OrderEntity>(OrderEntity.class). //
-                withAccessors(OrderEntity::getStates, OrderEntity::setStates). //
+        return new PropertyStateAccessor<OrderEntity>(OrderEntity.class). //
                 withManagedStates(stateCollection.getAllStates("orderState*", "orderManager*"));
     }
 
@@ -69,32 +68,32 @@ public class OrderFlowConfiguration {
 
     @Bean
     public State orderStateOpen() {
-        return new BaseState();
+        return new BasePropertyState().withStateNameProperty("states");
     }
 
     @Bean
     public State orderStateDone() {
-        return new BaseState();
+        return new BasePropertyState().withStateNameProperty("states");
     }
 
     @Bean
     public State orderStatePaymentRequested() {
-        return new BaseState();
+        return new BasePropertyState().withStateNameProperty("states");
     }
 
     @Bean
     public State orderStatePaymentDone() {
-        return new BaseState();
+        return new BasePropertyState().withStateNameProperty("states");
     }
 
     @Bean
     public State orderStatePackagingRequested() {
-        return new BaseState();
+        return new BasePropertyState().withStateNameProperty("states");
     }
 
     @Bean
     public State orderStatePackagingDone() {
-        return new BaseState();
+        return new BasePropertyState().withStateNameProperty("states");
     }
 
     //
@@ -179,6 +178,7 @@ public class OrderFlowConfiguration {
             @ActionRef
             public void finishOrder(OrderEntity order) {
                 log.info("(ignore) finishOrder: " + order);
+                log.info("  - (not) updated: " + order);
             }
         };
     }

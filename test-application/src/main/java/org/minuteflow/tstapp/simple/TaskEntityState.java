@@ -1,4 +1,4 @@
-package org.minuteflow.tstapp.json;
+package org.minuteflow.tstapp.simple;
 
 /*-
  * ========================LICENSE_START=================================
@@ -20,22 +20,6 @@ package org.minuteflow.tstapp.json;
  * =========================LICENSE_END==================================
  */
 
-import org.minuteflow.core.api.annotation.EntityRef;
-
-public interface OrderManager {
-    public default void startOrder(@EntityRef OrderEntity order) {
-        throw new UnsupportedOperationException();
-    }
-
-    public default void finishOrder(@EntityRef OrderEntity order) {
-        throw new UnsupportedOperationException();
-    }
-
-    public default void orderPaymentDone(@EntityRef OrderEntity order) {
-        throw new UnsupportedOperationException();
-    }
-
-    public default void orderPackagingDone(@EntityRef OrderEntity order) {
-        throw new UnsupportedOperationException();
-    }
+public enum TaskEntityState {
+    OPEN, IN_PROGRESS, DONE
 }
