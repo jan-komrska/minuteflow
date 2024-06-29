@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.SetUtils;
 import org.minuteflow.core.api.contract.CalculatedState;
+import org.minuteflow.core.api.contract.PropertyEntry;
 import org.minuteflow.core.api.contract.PropertyState;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.exception.EntityUpdateRejectedException;
@@ -59,7 +60,7 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
             if (managedState instanceof PropertyState propertyState) {
                 boolean applied = true;
                 //
-                for (Map.Entry<String, Object> stateEntry : propertyState.getProperties().entrySet()) {
+                for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
                     Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
                     applied = applied && Objects.equals(entityValue, stateEntry.getValue());
                 }
@@ -85,7 +86,7 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
         //
         for (State state : SetUtils.emptyIfNull(states)) {
             if (state instanceof PropertyState propertyState) {
-                for (Map.Entry<String, Object> stateEntry : propertyState.getProperties().entrySet()) {
+                for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
                     Object previousValue = entityProperties.putIfAbsent(stateEntry.getKey(), stateEntry.getValue());
                     if (previousValue != null) {
                         throw new EntityUpdateRejectedException();

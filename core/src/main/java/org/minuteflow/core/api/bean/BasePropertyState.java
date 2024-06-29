@@ -24,15 +24,39 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.minuteflow.core.api.contract.PropertyEntry;
 import org.minuteflow.core.api.contract.PropertyState;
 import org.minuteflow.core.api.contract.State;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 public class BasePropertyState extends BaseState implements PropertyState {
-    private Map<String, Object> rwProperties;
-    private Map<String, Object> roProperties;
+    @AllArgsConstructor
+    @Data
+    private class ValuePropertyEntry implements PropertyEntry {
+        private String key = null;
+        private Object value = null;
+    }
+
+    @AllArgsConstructor
+    @Data
+    private class StateNamePropertyEntry implements PropertyEntry {
+        private String key = null;
+
+        @Override
+        public Object getValue() {
+            return BasePropertyState.this.getName();
+        }
+    }
+
+    //
+
+    private Map<String, PropertyEntry> rwProperties;
+    private Map<String, PropertyEntry> roProperties;
 
     {
-        rwProperties = new HashMap<String, Object>();
+        rwProperties = new HashMap<String, PropertyEntry>();
         roProperties = Collections.unmodifiableMap(rwProperties);
     }
 
@@ -48,12 +72,17 @@ public class BasePropertyState extends BaseState implements PropertyState {
 
     //
 
-    public Map<String, Object> getProperties() {
+    public Map<String, PropertyEntry> getProperties() {
         return roProperties;
     }
 
-    public BasePropertyState withProperty(String name, Object value) {
-        rwProperties.put(name, value);
+    public BasePropertyState withProperty(String key, Object value) {
+        rwProperties.put(key, new ValuePropertyEntry(key, value));
+        return this;
+    }
+
+    public BasePropertyState withStateNameProperty(String key) {
+        rwProperties.put(key, new StateNamePropertyEntry(key));
         return this;
     }
 }

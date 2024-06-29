@@ -20,8 +20,8 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
-import java.util.Map;
+public interface PropertyEntry {
+    public String getKey();
 
-public interface PropertyState extends State {
-    public Map<String, PropertyEntry> getProperties();
+    public Object getValue();
 }
