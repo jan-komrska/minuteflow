@@ -1,7 +1,5 @@
 package org.minuteflow.core.impl.factory;
 
-import java.lang.annotation.Annotation;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -22,6 +20,7 @@ import java.lang.annotation.Annotation;
  * =========================LICENSE_END==================================
  */
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -68,8 +67,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
 
     //
 
-    private String registerExpressionState(BeanDefinitionRegistry registry, String serviceName, ExpressionStateType type, String[] targetStateNames) {
-        String stateName = nextBeanName(serviceName, "state");
+    private String registerExpressionState(BeanDefinitionRegistry registry, String parentBeanName, ExpressionStateType type, String[] targetStateNames) {
+        String stateName = nextBeanName(parentBeanName, "expression-state");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(ExpressionState.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -84,8 +83,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return stateName;
     }
 
-    private String registerController(BeanDefinitionRegistry registry, String parentStateName, String serviceName) {
-        String controllerName = nextBeanName(serviceName, "controller");
+    private String registerController(BeanDefinitionRegistry registry, String parentBeanName, String parentStateName, String serviceName) {
+        String controllerName = nextBeanName(parentBeanName, "controller");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -138,8 +137,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
             Class<? extends Annotation> targetRepeatableAnnotationClass) {
         ArrayList<MergedAnnotation<TargetAnnotation>> annotationList = new ArrayList<MergedAnnotation<TargetAnnotation>>();
         //
-        mergedAnnotations.stream(targetRepeatableAnnotationClass).flatMap((annotation) -> {
-            return Arrays.stream(annotation.getAnnotationArray("value", targetAnnotationClass));
+        mergedAnnotations.stream(targetRepeatableAnnotationClass).flatMap((repeatableAnnotation) -> {
+            return Arrays.stream(repeatableAnnotation.getAnnotationArray("value", targetAnnotationClass));
         }).forEach(annotationList::add);
         //
         mergedAnnotations.stream(targetAnnotationClass).forEach(annotationList::add);
@@ -171,13 +170,13 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                         //
                         if (ControllerRefType.IDENTITY.equals(type)) {
                             if (targetStateNames.length == 1) {
-                                registerController(registry, targetStateNames[0], beanName);
+                                registerController(registry, beanName, targetStateNames[0], beanName);
                             } else {
                                 throw new IllegalArgumentException();
                             }
                         } else {
                             String stateName = registerExpressionState(registry, beanName, ExpressionStateType.valueOf(type), targetStateNames);
-                            registerController(registry, stateName, beanName);
+                            registerController(registry, beanName, stateName, beanName);
                         }
                     }
                     //
