@@ -1,4 +1,4 @@
-package org.minuteflow.tstapp.mapped;
+package org.minuteflow.tstapp.multi;
 
 /*-
  * ========================LICENSE_START=================================
@@ -20,6 +20,22 @@ package org.minuteflow.tstapp.mapped;
  * =========================LICENSE_END==================================
  */
 
-public enum TaskEntityState {
-    OPEN, IN_PROGRESS, DONE
+import org.minuteflow.core.api.annotation.EntityRef;
+
+public interface OrderManager {
+    public default void startOrder(@EntityRef OrderEntity order) {
+        throw new UnsupportedOperationException();
+    }
+
+    public default void finishOrder(@EntityRef OrderEntity order) {
+        throw new UnsupportedOperationException();
+    }
+
+    public default void orderPaymentDone(@EntityRef OrderEntity order) {
+        throw new UnsupportedOperationException();
+    }
+
+    public default void orderPackagingDone(@EntityRef OrderEntity order) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -1,4 +1,4 @@
-package org.minuteflow.tstapp.mapped;
+package org.minuteflow.tstapp.simple;
 
 /*-
  * ========================LICENSE_START=================================

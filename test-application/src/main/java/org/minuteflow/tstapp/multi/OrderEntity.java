@@ -1,4 +1,4 @@
-package org.minuteflow.tstapp.mapped;
+package org.minuteflow.tstapp.multi;
 
 /*-
  * ========================LICENSE_START=================================
@@ -20,6 +20,8 @@ package org.minuteflow.tstapp.mapped;
  * =========================LICENSE_END==================================
  */
 
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,8 +31,8 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class TaskEntity {
+public class OrderEntity {
     private Long id;
     private String name;
-    private TaskEntityState state;
+    private Set<String> states;
 }
