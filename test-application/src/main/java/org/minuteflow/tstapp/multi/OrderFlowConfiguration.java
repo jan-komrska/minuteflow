@@ -24,48 +24,24 @@ import org.minuteflow.core.MinuteFlowConfiguration;
 import org.minuteflow.core.api.annotation.ActionRef;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
+import org.minuteflow.core.api.annotation.MinuteEntityRef;
+import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
-import org.minuteflow.core.api.bean.DispatchProxyFactory;
-import org.minuteflow.core.api.bean.PropertyStateAccessor;
-import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.State;
-import org.minuteflow.core.api.contract.StateAccessor;
-import org.minuteflow.core.api.contract.StateCollection;
 import org.minuteflow.core.api.contract.StateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
 @Import(MinuteFlowConfiguration.class)
+@MinuteServiceRef(OrderManager.class)
+@MinuteEntityRef(entityClass = OrderEntity.class, statePattern = { "orderState*", "orderManager*" })
 public class OrderFlowConfiguration {
-    @Autowired
-    private StateManager stateManager;
-
-    @Autowired
-    private Dispatcher dispatcher;
-
-    //
-
-    @Primary
-    @Bean
-    public DispatchProxyFactory<OrderManager> orderManager() {
-        return new DispatchProxyFactory<OrderManager>(OrderManager.class, dispatcher);
-    }
-
-    @Bean
-    public StateAccessor orderStateAccessor(@Autowired StateCollection stateCollection) {
-        return new PropertyStateAccessor<OrderEntity>(OrderEntity.class). //
-                withManagedStates(stateCollection.getAllStates("orderState*", "orderManager*"));
-    }
-
-    //
-
     @Bean
     public State orderStateOpen() {
         return new BasePropertyState().withStateNameProperty("states");
@@ -100,7 +76,7 @@ public class OrderFlowConfiguration {
 
     @ControllerRef("orderStateOpen")
     @Bean
-    public OrderManager orderManagerStateOpen() {
+    public OrderManager orderManagerStateOpen(@Autowired StateManager stateManager) {
         return new OrderManager() {
             @Override
             @ActionRef
@@ -122,6 +98,9 @@ public class OrderFlowConfiguration {
             @Autowired
             private OrderManager orderManager;
 
+            @Autowired
+            private StateManager stateManager;
+
             @Override
             @ActionRef
             public void orderPaymentDone(OrderEntity order) {
@@ -141,6 +120,9 @@ public class OrderFlowConfiguration {
             @Autowired
             private OrderManager orderManager;
 
+            @Autowired
+            private StateManager stateManager;
+
             @Override
             @ActionRef
             public void orderPackagingDone(OrderEntity order) {
@@ -155,7 +137,7 @@ public class OrderFlowConfiguration {
 
     @ControllerRef(type = ControllerRefType.AND, value = { "orderStatePaymentDone", "orderStatePackagingDone" })
     @Bean
-    public OrderManager orderManagerStatePaPDone() {
+    public OrderManager orderManagerStatePaPDone(@Autowired StateManager stateManager) {
         return new OrderManager() {
             @Override
             @ActionRef
