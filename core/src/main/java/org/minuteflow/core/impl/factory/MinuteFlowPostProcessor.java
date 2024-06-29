@@ -1,5 +1,7 @@
 package org.minuteflow.core.impl.factory;
 
+import java.lang.annotation.Annotation;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -64,18 +66,6 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
 
     //
 
-    private List<MergedAnnotation<ControllerRef>> getControllerRefs(MergedAnnotations mergedAnnotations) {
-        ArrayList<MergedAnnotation<ControllerRef>> controllerRefs = new ArrayList<MergedAnnotation<ControllerRef>>();
-        //
-        mergedAnnotations.stream(ControllerRefs.class).flatMap((annotation) -> {
-            return Arrays.stream(annotation.getAnnotationArray("value", ControllerRef.class));
-        }).forEach(controllerRefs::add);
-        //
-        mergedAnnotations.stream(ControllerRef.class).forEach(controllerRefs::add);
-        //
-        return controllerRefs;
-    }
-
     private String registerExpressionState(BeanDefinitionRegistry registry, String serviceName, ExpressionStateType type, String[] targetStateNames) {
         String stateName = nextBeanName(serviceName, "state");
         //
@@ -108,18 +98,6 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerName;
     }
 
-    private List<MergedAnnotation<MinuteServiceRef>> getMinuteServiceRefs(MergedAnnotations mergedAnnotations) {
-        ArrayList<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = new ArrayList<MergedAnnotation<MinuteServiceRef>>();
-        //
-        mergedAnnotations.stream(MinuteServiceRefs.class).flatMap((annotation) -> {
-            return Arrays.stream(annotation.getAnnotationArray("value", MinuteServiceRef.class));
-        }).forEach(minuteServiceRefs::add);
-        //
-        mergedAnnotations.stream(MinuteServiceRef.class).forEach(minuteServiceRefs::add);
-        //
-        return minuteServiceRefs;
-    }
-
     private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, Class<?> serviceClass) {
         String minuteServiceName = nextBeanName(parentBeanName, "minute-service");
         //
@@ -135,6 +113,20 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         log.debug("Registered minute service [" + minuteServiceName + "]");
         //
         return minuteServiceName;
+    }
+
+    private <TargetAnnotation extends Annotation> List<MergedAnnotation<TargetAnnotation>> getAnnotations( //
+            MergedAnnotations mergedAnnotations, Class<TargetAnnotation> targetAnnotationClass, //
+            Class<? extends Annotation> targetRepeatableAnnotationClass) {
+        ArrayList<MergedAnnotation<TargetAnnotation>> annotationList = new ArrayList<MergedAnnotation<TargetAnnotation>>();
+        //
+        mergedAnnotations.stream(targetRepeatableAnnotationClass).flatMap((annotation) -> {
+            return Arrays.stream(annotation.getAnnotationArray("value", targetAnnotationClass));
+        }).forEach(annotationList::add);
+        //
+        mergedAnnotations.stream(targetAnnotationClass).forEach(annotationList::add);
+        //
+        return annotationList;
     }
 
     @Override
@@ -153,7 +145,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                 if (metadata != null) {
                     MergedAnnotations mergedAnnotations = metadata.getAnnotations();
                     //
-                    List<MergedAnnotation<ControllerRef>> controlleRefs = getControllerRefs(mergedAnnotations);
+                    List<MergedAnnotation<ControllerRef>> controlleRefs = //
+                            getAnnotations(mergedAnnotations, ControllerRef.class, ControllerRefs.class);
                     for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
                         ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
                         String[] targetStateNames = controllerRef.getStringArray("value");
@@ -170,7 +163,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                         }
                     }
                     //
-                    List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = getMinuteServiceRefs(mergedAnnotations);
+                    List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
+                            getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
                     for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
                         Class<?> serviceClass = minuteServiceRef.getClass("value");
                         registerMinuteService(registry, beanName, serviceClass);
