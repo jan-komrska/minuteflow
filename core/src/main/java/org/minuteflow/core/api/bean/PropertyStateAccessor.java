@@ -66,13 +66,15 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
         return typeDescriptor.getResolvableType().getType();
     }
 
-    private Type getType(Type type, TypeVariable<?> variable) {
-        return TypeUtils.getTypeArguments(type, (Class<?>) variable.getGenericDeclaration()).get(variable);
+    private Type getType(Type type, TypeVariable<? extends Class<?>> variable) {
+        return TypeUtils.getTypeArguments(type, variable.getGenericDeclaration()).get(variable);
     }
 
     private Object convertValue(Object value, Type targetType) {
         return objectMapper.convertValue(value, objectMapper.constructType(targetType));
     }
+
+    //
 
     @Override
     protected Set<State> getStatesImpl(Entity entity) {
