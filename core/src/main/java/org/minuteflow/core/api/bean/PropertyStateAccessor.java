@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
@@ -39,7 +40,6 @@ import org.minuteflow.core.api.exception.EntityUpdateRejectedException;
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.TypeDescriptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -62,8 +62,8 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
 
     //
 
-    private Type getType(TypeDescriptor typeDescriptor) {
-        return typeDescriptor.getResolvableType().getType();
+    private Type getType(PropertyAccessor propertyAccessor, String propertyName) {
+        return propertyAccessor.getPropertyTypeDescriptor(propertyName).getResolvableType().getType();
     }
 
     private Type getType(Type type, TypeVariable<? extends Class<?>> variable) {
@@ -86,14 +86,18 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
                 boolean applied = true;
                 //
                 for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
-                    Type entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(stateEntry.getKey()));
+                    Type entityValueType = getType(entityPropertyAccessor, stateEntry.getKey());
                     //
                     if (TypeUtils.isAssignable(entityValueType, Collection.class)) {
                         Type entityItemType = getType(entityValueType, Collection.class.getTypeParameters()[0]);
                         Object stateValue = convertValue(stateEntry.getValue(), entityItemType);
                         Collection<?> entityValues = (Collection<?>) entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
                         //
-                        applied = applied && entityValues.contains(stateValue);
+                        if (CollectionUtils.isNotEmpty(entityValues)) {
+                            applied = applied && entityValues.contains(stateValue);
+                        } else {
+                            applied = false;
+                        }
                     } else {
                         Object stateValue = convertValue(stateEntry.getValue(), entityValueType);
                         Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
@@ -135,7 +139,7 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
         PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
         for (String key : stateProperties.keys()) {
             Collection<Object> stateValues = new HashSet<Object>(stateProperties.get(key));
-            Type entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(key));
+            Type entityValueType = getType(entityPropertyAccessor, key);
             //
             if (TypeUtils.isAssignable(entityValueType, Collection.class)) {
                 Object entityValues = convertValue(stateValues, entityValueType);
