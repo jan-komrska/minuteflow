@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
@@ -93,7 +94,11 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
                         Object stateValue = convertValue(stateEntry.getValue(), entityItemType);
                         Collection<?> entityValues = (Collection<?>) entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
                         //
-                        applied = applied && entityValues.contains(stateValue);
+                        if (CollectionUtils.isNotEmpty(entityValues)) {
+                            applied = applied && entityValues.contains(stateValue);
+                        } else {
+                            applied = false;
+                        }
                     } else {
                         Object stateValue = convertValue(stateEntry.getValue(), entityValueType);
                         Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
