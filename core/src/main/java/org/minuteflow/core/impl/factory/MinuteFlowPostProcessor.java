@@ -1,7 +1,5 @@
 package org.minuteflow.core.impl.factory;
 
-import java.lang.annotation.Annotation;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -22,6 +20,7 @@ import java.lang.annotation.Annotation;
  * =========================LICENSE_END==================================
  */
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
