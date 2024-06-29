@@ -178,6 +178,7 @@ public class OrderFlowConfiguration {
             @ActionRef
             public void finishOrder(OrderEntity order) {
                 log.info("(ignore) finishOrder: " + order);
+                log.info("  - (not) updated: " + order);
             }
         };
     }

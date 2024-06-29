@@ -62,11 +62,11 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
 
     //
 
-    private Type getJavaType(TypeDescriptor typeDescriptor) {
+    private Type getType(TypeDescriptor typeDescriptor) {
         return typeDescriptor.getResolvableType().getType();
     }
 
-    private Type getJavaType(Type type, TypeVariable<?> variable) {
+    private Type getType(Type type, TypeVariable<?> variable) {
         return TypeUtils.getTypeArguments(type, (Class<?>) variable.getGenericDeclaration()).get(variable);
     }
 
@@ -84,17 +84,19 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
                 boolean applied = true;
                 //
                 for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
-                    Type entityValueType = getJavaType(entityPropertyAccessor.getPropertyTypeDescriptor(stateEntry.getKey()));
-                    Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
                     Object stateValue = stateEntry.getValue();
+                    Type entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(stateEntry.getKey()));
+                    //
                     if (TypeUtils.isAssignable(entityValueType, Collection.class)) {
-                        Collection<?> entityValueAsCollection = (Collection<?>) entityValue;
-                        Type entityItemType = getJavaType(entityValueType, Collection.class.getTypeParameters()[0]);
-                        //
+                        Type entityItemType = getType(entityValueType, Collection.class.getTypeParameters()[0]);
                         stateValue = convertValue(stateValue, entityItemType);
+                        //
+                        Collection<?> entityValueAsCollection = (Collection<?>) entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
                         applied = applied && entityValueAsCollection.contains(stateValue);
                     } else {
                         stateValue = convertValue(stateValue, entityValueType);
+                        //
+                        Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
                         applied = applied && Objects.equals(entityValue, stateValue);
                     }
                 }
@@ -128,15 +130,15 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
         //
         PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
         for (String key : stateProperties.keys()) {
-            Type entityValueType = getJavaType(entityPropertyAccessor.getPropertyTypeDescriptor(key));
             Collection<Object> stateValueAsCollection = stateProperties.get(key);
+            Type entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(key));
+            //
             if (TypeUtils.isAssignable(entityValueType, Collection.class)) {
                 Object entityValue = convertValue(stateValueAsCollection, entityValueType);
                 entityPropertyAccessor.setPropertyValue(key, entityValue);
             } else {
                 if (stateValueAsCollection.size() == 1) {
-                    Object entityValue = stateValueAsCollection.iterator().next();
-                    entityValue = convertValue(entityValue, entityValueType);
+                    Object entityValue = convertValue(stateValueAsCollection.iterator().next(), entityValueType);
                     entityPropertyAccessor.setPropertyValue(key, entityValue);
                 } else {
                     throw new IllegalStateException();
