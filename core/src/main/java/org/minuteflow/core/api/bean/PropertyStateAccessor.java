@@ -109,7 +109,6 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
         }
         //
         Set<State> persistentAppliedStates = new HashSet<State>(appliedStates);
-        //
         for (State managedState : SetUtils.emptyIfNull(managedStates)) {
             if (managedState instanceof CalculatedState calculatedState) {
                 if (calculatedState.appliesTo(persistentAppliedStates)) {
