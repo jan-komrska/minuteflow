@@ -1,5 +1,7 @@
 package org.minuteflow.core.api.bean;
 
+import java.lang.reflect.Type;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -20,13 +22,14 @@ package org.minuteflow.core.api.bean;
  * =========================LICENSE_END==================================
  */
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
 import org.minuteflow.core.api.contract.CalculatedState;
 import org.minuteflow.core.api.contract.PropertyEntry;
 import org.minuteflow.core.api.contract.PropertyState;
@@ -34,6 +37,11 @@ import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.exception.EntityUpdateRejectedException;
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.TypeDescriptor;
+
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -41,6 +49,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PropertyStateAccessor<Entity extends Object> extends BaseStateAccessor<Entity> {
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private Set<State> managedStates = null;
 
     //
@@ -50,6 +61,11 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
     }
 
     //
+
+    private JavaType getType(TypeDescriptor typeDescriptor) {
+        Type type = typeDescriptor.getResolvableType().getType();
+        return objectMapper.constructType(type);
+    }
 
     @Override
     protected Set<State> getStatesImpl(Entity entity) {
@@ -61,8 +77,14 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
                 boolean applied = true;
                 //
                 for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
+                    JavaType entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(stateEntry.getKey()));
                     Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
-                    applied = applied && Objects.equals(entityValue, stateEntry.getValue());
+                    if (entityValueType.isTypeOrSubTypeOf(Collection.class)) {
+                        Collection<?> entityValueAsCollection = (Collection<?>) entityValue;
+                        applied = applied && entityValueAsCollection.contains(stateEntry.getValue());
+                    } else {
+                        applied = applied && Objects.equals(entityValue, stateEntry.getValue());
+                    }
                 }
                 //
                 if (applied) {
@@ -82,22 +104,31 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
 
     @Override
     protected void setStatesImpl(Entity entity, Set<State> states) throws EntityUpdateRejectedException {
-        Map<String, Object> entityProperties = new HashMap<String, Object>();
+        MultiValuedMap<String, Object> entityProperties = new HashSetValuedHashMap<String, Object>();
         //
         for (State state : SetUtils.emptyIfNull(states)) {
             if (state instanceof PropertyState propertyState) {
                 for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
-                    Object previousValue = entityProperties.putIfAbsent(stateEntry.getKey(), stateEntry.getValue());
-                    if (previousValue != null) {
-                        throw new EntityUpdateRejectedException();
-                    }
+                    entityProperties.put(stateEntry.getKey(), stateEntry.getValue());
                 }
             }
         }
         //
         PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
-        for (Map.Entry<String, Object> entityEntry : entityProperties.entrySet()) {
-            entityPropertyAccessor.setPropertyValue(entityEntry.getKey(), entityEntry.getValue());
+        for (String key : entityProperties.keys()) {
+            JavaType entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(key));
+            Collection<Object> entityValueAsCollection = entityProperties.get(key);
+            if (entityValueType.isTypeOrSubTypeOf(Collection.class)) {
+                Object entityValue = entityValueAsCollection;
+                entityValue = objectMapper.convertValue(entityValue, entityValueType);
+                entityPropertyAccessor.setPropertyValue(key, entityValue);
+            } else {
+                if (entityValueAsCollection.size() == 1) {
+                    entityPropertyAccessor.setPropertyValue(key, entityValueAsCollection.iterator().next());
+                } else {
+                    throw new IllegalStateException();
+                }
+            }
         }
     }
 

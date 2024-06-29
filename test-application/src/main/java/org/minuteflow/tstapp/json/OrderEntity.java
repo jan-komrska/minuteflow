@@ -20,6 +20,8 @@ package org.minuteflow.tstapp.json;
  * =========================LICENSE_END==================================
  */
 
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,5 +34,5 @@ import lombok.ToString;
 public class OrderEntity {
     private Long id;
     private String name;
-    private String states;
+    private Set<String> states;
 }
