@@ -1,7 +1,5 @@
 package org.minuteflow.core.api.bean;
 
-import java.lang.reflect.Type;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -22,6 +20,8 @@ import java.lang.reflect.Type;
  * =========================LICENSE_END==================================
  */
 
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.minuteflow.core.api.contract.CalculatedState;
 import org.minuteflow.core.api.contract.PropertyEntry;
 import org.minuteflow.core.api.contract.PropertyState;
@@ -40,7 +41,6 @@ import org.springframework.beans.PropertyAccessorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.TypeDescriptor;
 
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
@@ -62,9 +62,16 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
 
     //
 
-    private JavaType getType(TypeDescriptor typeDescriptor) {
-        Type type = typeDescriptor.getResolvableType().getType();
-        return objectMapper.constructType(type);
+    private Type getJavaType(TypeDescriptor typeDescriptor) {
+        return typeDescriptor.getResolvableType().getType();
+    }
+
+    private Type getJavaType(Type type, TypeVariable<?> variable) {
+        return TypeUtils.getTypeArguments(type, (Class<?>) variable.getGenericDeclaration()).get(variable);
+    }
+
+    private Object convertValue(Object value, Type targetType) {
+        return objectMapper.convertValue(value, objectMapper.constructType(targetType));
     }
 
     @Override
@@ -77,13 +84,18 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
                 boolean applied = true;
                 //
                 for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
-                    JavaType entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(stateEntry.getKey()));
+                    Type entityValueType = getJavaType(entityPropertyAccessor.getPropertyTypeDescriptor(stateEntry.getKey()));
                     Object entityValue = entityPropertyAccessor.getPropertyValue(stateEntry.getKey());
-                    if (entityValueType.isTypeOrSubTypeOf(Collection.class)) {
+                    Object stateValue = stateEntry.getValue();
+                    if (TypeUtils.isAssignable(entityValueType, Collection.class)) {
                         Collection<?> entityValueAsCollection = (Collection<?>) entityValue;
-                        applied = applied && entityValueAsCollection.contains(stateEntry.getValue());
+                        Type entityItemType = getJavaType(entityValueType, Collection.class.getTypeParameters()[0]);
+                        //
+                        stateValue = convertValue(stateValue, entityItemType);
+                        applied = applied && entityValueAsCollection.contains(stateValue);
                     } else {
-                        applied = applied && Objects.equals(entityValue, stateEntry.getValue());
+                        stateValue = convertValue(stateValue, entityValueType);
+                        applied = applied && Objects.equals(entityValue, stateValue);
                     }
                 }
                 //
@@ -104,27 +116,28 @@ public class PropertyStateAccessor<Entity extends Object> extends BaseStateAcces
 
     @Override
     protected void setStatesImpl(Entity entity, Set<State> states) throws EntityUpdateRejectedException {
-        MultiValuedMap<String, Object> entityProperties = new HashSetValuedHashMap<String, Object>();
+        MultiValuedMap<String, Object> stateProperties = new HashSetValuedHashMap<String, Object>();
         //
         for (State state : SetUtils.emptyIfNull(states)) {
             if (state instanceof PropertyState propertyState) {
                 for (PropertyEntry stateEntry : propertyState.getProperties().values()) {
-                    entityProperties.put(stateEntry.getKey(), stateEntry.getValue());
+                    stateProperties.put(stateEntry.getKey(), stateEntry.getValue());
                 }
             }
         }
         //
         PropertyAccessor entityPropertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(entity);
-        for (String key : entityProperties.keys()) {
-            JavaType entityValueType = getType(entityPropertyAccessor.getPropertyTypeDescriptor(key));
-            Collection<Object> entityValueAsCollection = entityProperties.get(key);
-            if (entityValueType.isTypeOrSubTypeOf(Collection.class)) {
-                Object entityValue = entityValueAsCollection;
-                entityValue = objectMapper.convertValue(entityValue, entityValueType);
+        for (String key : stateProperties.keys()) {
+            Type entityValueType = getJavaType(entityPropertyAccessor.getPropertyTypeDescriptor(key));
+            Collection<Object> stateValueAsCollection = stateProperties.get(key);
+            if (TypeUtils.isAssignable(entityValueType, Collection.class)) {
+                Object entityValue = convertValue(stateValueAsCollection, entityValueType);
                 entityPropertyAccessor.setPropertyValue(key, entityValue);
             } else {
-                if (entityValueAsCollection.size() == 1) {
-                    entityPropertyAccessor.setPropertyValue(key, entityValueAsCollection.iterator().next());
+                if (stateValueAsCollection.size() == 1) {
+                    Object entityValue = stateValueAsCollection.iterator().next();
+                    entityValue = convertValue(entityValue, entityValueType);
+                    entityPropertyAccessor.setPropertyValue(key, entityValue);
                 } else {
                     throw new IllegalStateException();
                 }
