@@ -21,5 +21,7 @@ package org.minuteflow.core.api.contract;
  */
 
 public interface Source<Entity> {
+    public boolean isActive();
+
     public Entity getEntity();
 }
