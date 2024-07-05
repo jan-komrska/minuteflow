@@ -24,4 +24,8 @@ public interface Source<Entity> {
     public boolean isActive();
 
     public Entity getEntity();
+
+    public void saveEntity();
+
+    public void deleteEntity();
 }

@@ -23,7 +23,5 @@ package org.minuteflow.core.api.contract;
 public interface SourceResolver {
     public <Entity> boolean isSupported(Source<Entity> source);
 
-    public <Entity> Source<Entity> loadSource(Source<Entity> source);
-
-    public <Entity> Source<Entity> saveSource(Source<Entity> source);
+    public <Entity> Source<Entity> resolveSource(Source<Entity> source);
 }
