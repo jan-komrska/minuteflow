@@ -34,7 +34,7 @@ import org.minuteflow.core.api.exception.SourceNotSupportedException;
 import lombok.Getter;
 
 @Getter
-public abstract class AbstractSourceResolver<Entity> implements SourceResolver<Entity> {
+public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
         private String name = null;
@@ -63,7 +63,7 @@ public abstract class AbstractSourceResolver<Entity> implements SourceResolver<E
         @Override
         public void saveEntity() {
             if (active) {
-                AbstractSourceResolver.this.saveEntity(entity);
+                BaseSourceResolver.this.saveEntity(entity);
             } else {
                 throw new IllegalStateException();
             }
@@ -72,7 +72,7 @@ public abstract class AbstractSourceResolver<Entity> implements SourceResolver<E
         @Override
         public boolean deleteEntity() {
             if (active) {
-                boolean deleted = AbstractSourceResolver.this.deleteEntity(entity);
+                boolean deleted = BaseSourceResolver.this.deleteEntity(entity);
                 this.active = !deleted;
                 return deleted;
             } else {
@@ -86,7 +86,7 @@ public abstract class AbstractSourceResolver<Entity> implements SourceResolver<E
 
     private Class<Entity> entityClass = null;
 
-    public AbstractSourceResolver(Class<Entity> entityClass) {
+    public BaseSourceResolver(Class<Entity> entityClass) {
         this.entityClass = entityClass;
     }
 
