@@ -1,4 +1,4 @@
-package org.minuteflow.core.api.contract;
+package org.minuteflow.core.api.exception;
 
 /*-
  * ========================LICENSE_START=================================
@@ -20,8 +20,24 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
-import org.minuteflow.core.api.exception.SourceNotSupportedException;
+public class SourceNotSupportedException extends BaseException {
+    private static final long serialVersionUID = 843533120829623642L;
 
-public interface SourceResolver {
-    public <Entity> Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException;
+    //
+
+    public SourceNotSupportedException() {
+        super();
+    }
+
+    public SourceNotSupportedException(String message) {
+        super(message);
+    }
+
+    public SourceNotSupportedException(Throwable cause) {
+        super(cause);
+    }
+
+    public SourceNotSupportedException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
