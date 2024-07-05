@@ -60,12 +60,12 @@ class ImmutableSource<Entity> implements Source<Entity> {
     }
 
     @Override
-    public void saveEntity() {
+    public Entity saveEntity() {
         throw new IllegalStateException();
     }
 
     @Override
-    public boolean deleteEntity() {
+    public void deleteEntity() {
         throw new IllegalStateException();
     }
 }

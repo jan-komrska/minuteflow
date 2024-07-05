@@ -36,9 +36,9 @@ public interface Source<Entity> {
 
     public Entity getEntity();
 
-    public void saveEntity();
+    public Entity saveEntity();
 
-    public boolean deleteEntity();
+    public void deleteEntity();
 
     //
 

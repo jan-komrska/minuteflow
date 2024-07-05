@@ -61,20 +61,20 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entit
         }
 
         @Override
-        public void saveEntity() {
+        public Entity saveEntity() {
             if (active) {
-                BaseSourceResolver.this.saveEntity(entity);
+                this.entity = BaseSourceResolver.this.saveEntity(entity);
+                return this.entity;
             } else {
                 throw new IllegalStateException();
             }
         }
 
         @Override
-        public boolean deleteEntity() {
+        public void deleteEntity() {
             if (active) {
-                boolean deleted = BaseSourceResolver.this.deleteEntity(entity);
-                this.active = !deleted;
-                return deleted;
+                BaseSourceResolver.this.deleteEntity(entity);
+                this.active = false;
             } else {
                 throw new IllegalStateException();
             }
@@ -104,7 +104,7 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entit
 
     protected abstract Entity loadEntity(String name, List<Object> parameters);
 
-    protected abstract void saveEntity(Entity entity);
+    protected abstract Entity saveEntity(Entity entity);
 
-    protected abstract boolean deleteEntity(Entity entity);
+    protected abstract void deleteEntity(Entity entity);
 }
