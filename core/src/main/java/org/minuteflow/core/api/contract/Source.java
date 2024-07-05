@@ -24,13 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public interface Source<Entity> {
-    public static final String DEFAULT_NAME = "default";
+    public List<Object> getParameters();
 
     //
-
-    public String getName();
-
-    public List<Object> getParameters();
 
     public boolean isActive();
 
@@ -45,10 +41,5 @@ public interface Source<Entity> {
     public static <Entity> Source<Entity> of(Object... parameters) {
         List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
         return new ImmutableSource<Entity>(parametersAsList);
-    }
-
-    public static <Entity> Source<Entity> ofNameAndParameters(String name, Object... parameters) {
-        List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
-        return new ImmutableSource<Entity>(name, parametersAsList);
     }
 }

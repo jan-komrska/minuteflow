@@ -20,31 +20,20 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 
 @Getter
 class ImmutableSource<Entity> implements Source<Entity> {
-    private String name = null;
     private List<Object> parameters = null;
 
     //
 
-    public ImmutableSource(String name, List<Object> parameters) {
-        parameters = ListUtils.emptyIfNull(parameters);
-        //
-        this.name = StringUtils.defaultString(name, DEFAULT_NAME);
-        this.parameters = Collections.unmodifiableList(new ArrayList<Object>(parameters));
-    }
-
     public ImmutableSource(List<Object> parameters) {
-        this(null, parameters);
+        this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
     }
 
     //

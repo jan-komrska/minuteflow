@@ -20,13 +20,10 @@ package org.minuteflow.core.api.bean;
  * =========================LICENSE_END==================================
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
@@ -37,16 +34,12 @@ import lombok.Getter;
 public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
-        private String name = null;
         private List<Object> parameters = null;
         private Entity entity = null;
         private boolean active = false;
 
-        public EmbeddedSource(String name, List<Object> parameters, Entity entity) {
-            parameters = ListUtils.emptyIfNull(parameters);
-            //
-            this.name = StringUtils.defaultString(name, DEFAULT_NAME);
-            this.parameters = Collections.unmodifiableList(new ArrayList<Object>(parameters));
+        public EmbeddedSource(List<Object> parameters, Entity entity) {
+            this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
             this.entity = Objects.requireNonNull(entity);
             this.active = true;
         }
@@ -93,8 +86,8 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entit
     @Override
     public Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException {
         if (!source.isActive()) {
-            Entity entity = loadEntity(source.getName(), source.getParameters());
-            return new EmbeddedSource(source.getName(), source.getParameters(), entity);
+            Entity entity = loadEntity(source.getParameters());
+            return new EmbeddedSource(source.getParameters(), entity);
         } else {
             return source;
         }
@@ -102,7 +95,7 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entit
 
     //
 
-    protected abstract Entity loadEntity(String name, List<Object> parameters);
+    protected abstract Entity loadEntity(List<Object> parameters);
 
     protected abstract Entity saveEntity(Entity entity);
 
