@@ -22,6 +22,6 @@ package org.minuteflow.core.api.contract;
 
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
 
-public interface SourceResolver {
-    public <Entity> Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException;
+public interface SourceResolver<Entity> {
+    public Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException;
 }

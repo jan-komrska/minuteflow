@@ -38,7 +38,7 @@ public interface Source<Entity> {
 
     public void saveEntity();
 
-    public void deleteEntity();
+    public boolean deleteEntity();
 
     //
 
