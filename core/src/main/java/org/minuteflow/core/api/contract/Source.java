@@ -21,5 +21,5 @@ package org.minuteflow.core.api.contract;
  */
 
 public interface Source<Entity> {
-    public Entity get();
+    public Entity getEntity();
 }

@@ -22,7 +22,7 @@ package org.minuteflow.core.api.contract;
 
 import java.util.List;
 
-public interface QuerySource<Entity> extends Source<Entity> {
+public interface NamedSource<Entity> extends Source<Entity> {
     public String getName();
 
     public List<Object> getParameters();
