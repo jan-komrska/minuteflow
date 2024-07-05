@@ -20,7 +20,18 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
+import java.util.Arrays;
+import java.util.List;
+
 public interface Source<Entity> {
+    public static final String DEFAULT_NAME = "default";
+
+    //
+
+    public String getName();
+
+    public List<Object> getParameters();
+
     public boolean isActive();
 
     public Entity getEntity();
@@ -28,4 +39,16 @@ public interface Source<Entity> {
     public void saveEntity();
 
     public void deleteEntity();
+
+    //
+
+    public static <Entity> Source<Entity> of(Object... parameters) {
+        List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
+        return new ImmutableSource<Entity>(parametersAsList);
+    }
+
+    public static <Entity> Source<Entity> ofNameAndParameters(String name, Object... parameters) {
+        List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
+        return new ImmutableSource<Entity>(name, parametersAsList);
+    }
 }
