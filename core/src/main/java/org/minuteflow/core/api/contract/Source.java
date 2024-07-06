@@ -28,7 +28,7 @@ public interface Source<Entity> {
 
     //
 
-    public boolean isLoaded();
+    public boolean isResolved();
 
     public boolean isSaved();
 

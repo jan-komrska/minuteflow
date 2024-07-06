@@ -1,7 +1,5 @@
 package org.minuteflow.core.api.bean;
 
-import java.lang.reflect.Type;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -22,10 +20,13 @@ import java.lang.reflect.Type;
  * =========================LICENSE_END==================================
  */
 
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
@@ -34,7 +35,7 @@ import org.springframework.data.repository.CrudRepository;
 import lombok.Getter;
 
 @Getter
-public abstract class BaseSourceResolver<Entity, EntityId> implements SourceResolver {
+public abstract class BaseSourceResolver<Entity> implements SourceResolver {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
         private List<Object> parameters = null;
@@ -48,7 +49,7 @@ public abstract class BaseSourceResolver<Entity, EntityId> implements SourceReso
         }
 
         @Override
-        public boolean isLoaded() {
+        public boolean isResolved() {
             // TODO Auto-generated method stub
             return false;
         }
@@ -99,21 +100,38 @@ public abstract class BaseSourceResolver<Entity, EntityId> implements SourceReso
     //
 
     private Class<?> contractClass = null;
-    private CrudRepository<Entity, EntityId> crudRepository = null;
+    private Class<?> entityClass = null;
+    private CrudRepository<Entity, ?> crudRepository = null;
 
-    public BaseSourceResolver(Class<?> contractClass) {
+    //
+
+    public BaseSourceResolver(Class<?> contractClass, Class<Entity> entityClass, CrudRepository<Entity, ?> crudRepository) {
         this.contractClass = contractClass;
+        this.entityClass = entityClass;
+        this.crudRepository = crudRepository;
     }
 
+    //
+
+    private Type getType(Type type, TypeVariable<? extends Class<?>> variable) {
+        return TypeUtils.getTypeArguments(type, variable.getGenericDeclaration()).get(variable);
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
-    public <ThatEntity> Source<ThatEntity> resolve(Source<ThatEntity> source, Type sourceType) //
+    public <OtherEntity> Source<OtherEntity> resolve(Source<OtherEntity> source, Type sourceType) //
             throws SourceNotSupportedException {
-        if (!source.isLoaded()) {
-            Entity entity = loadEntity(source.getParameters());
-            new EmbeddedSource(source.getParameters(), entity);
-            return null;
+        if (source.isResolved() && !source.isDeleted()) {
+            throw new IllegalStateException();
+        }
+        //
+        Type entityType = getType(sourceType, Source.class.getTypeParameters()[0]);
+        Entity entity = loadEntity(source.getParameters());
+        //
+        if (TypeUtils.isInstance(entity, entityType)) {
+            return (Source<OtherEntity>) new EmbeddedSource(source.getParameters(), entity);
         } else {
-            return source;
+            throw new IllegalStateException();
         }
     }
 

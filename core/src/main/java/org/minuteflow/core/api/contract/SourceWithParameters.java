@@ -39,7 +39,7 @@ class SourceWithParameters<Entity> implements Source<Entity> {
     //
 
     @Override
-    public boolean isLoaded() {
+    public boolean isResolved() {
         return false;
     }
 
