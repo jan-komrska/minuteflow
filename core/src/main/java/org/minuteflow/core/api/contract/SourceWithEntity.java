@@ -20,52 +20,59 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
-
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
-class ImmutableSource<Entity> implements Source<Entity> {
-    private String name = null;
-    private List<Object> parameters = null;
+class SourceWithEntity<Entity> implements Source<Entity> {
+    private List<Object> parameters = Collections.emptyList();
+
+    @Getter(AccessLevel.NONE)
+    private Entity entity = null;
+
+    private boolean loaded = false;
+    private boolean saved = false;
+    private boolean deleted = false;
 
     //
 
-    public ImmutableSource(String name, List<Object> parameters) {
-        parameters = ListUtils.emptyIfNull(parameters);
-        //
-        this.name = StringUtils.defaultString(name, DEFAULT_NAME);
-        this.parameters = Collections.unmodifiableList(new ArrayList<Object>(parameters));
-    }
-
-    public ImmutableSource(List<Object> parameters) {
-        this(null, parameters);
+    public SourceWithEntity(Entity entity) {
+        this.entity = Objects.requireNonNull(entity);
+        this.loaded = true;
     }
 
     //
-
-    @Override
-    public boolean isActive() {
-        return false;
-    }
 
     @Override
     public Entity getEntity() {
-        throw new IllegalStateException();
+        if (loaded) {
+            return entity;
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     @Override
-    public void saveEntity() {
-        throw new IllegalStateException();
+    public Entity saveEntity() {
+        if (loaded) {
+            saved = true;
+            return entity;
+        } else {
+            throw new IllegalStateException();
+        }
     }
 
     @Override
     public void deleteEntity() {
-        throw new IllegalStateException();
+        if (loaded) {
+            loaded = false;
+            deleted = true;
+        } else {
+            throw new IllegalStateException();
+        }
     }
 }
