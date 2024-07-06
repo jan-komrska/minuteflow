@@ -20,36 +20,51 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
-import java.util.Arrays;
 import java.util.List;
 
-public interface Source<Entity> {
-    public List<Object> getParameters();
+import org.apache.commons.collections4.ListUtils;
+
+import lombok.Getter;
+
+@Getter
+class SourceWithParameters<Entity> implements Source<Entity> {
+    private List<Object> parameters = null;
 
     //
 
-    public boolean isLoaded();
-
-    public boolean isSaved();
-
-    public boolean isDeleted();
-
-    //
-
-    public Entity getEntity();
-
-    public Entity saveEntity();
-
-    public void deleteEntity();
-
-    //
-
-    public static <Entity> Source<Entity> withParameters(Object... parameters) {
-        List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
-        return new SourceWithParameters<Entity>(parametersAsList);
+    public SourceWithParameters(List<Object> parameters) {
+        this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
     }
 
-    public static <Entity> Source<Entity> withEntity(Entity entity) {
-        return new SourceWithEntity<Entity>(entity);
+    //
+
+    @Override
+    public boolean isLoaded() {
+        return false;
+    }
+
+    @Override
+    public boolean isSaved() {
+        return false;
+    }
+
+    @Override
+    public boolean isDeleted() {
+        return false;
+    }
+
+    @Override
+    public Entity getEntity() {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    public Entity saveEntity() {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    public void deleteEntity() {
+        throw new IllegalStateException();
     }
 }

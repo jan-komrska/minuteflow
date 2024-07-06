@@ -1,5 +1,7 @@
 package org.minuteflow.core.api.bean;
 
+import java.lang.reflect.Type;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -27,11 +29,12 @@ import org.apache.commons.collections4.ListUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
+import org.springframework.data.repository.CrudRepository;
 
 import lombok.Getter;
 
 @Getter
-public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
+public abstract class BaseSourceResolver<Entity, EntityId> implements SourceResolver {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
         private List<Object> parameters = null;
@@ -42,6 +45,24 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entit
             this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
             this.entity = Objects.requireNonNull(entity);
             this.active = true;
+        }
+
+        @Override
+        public boolean isLoaded() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public boolean isSaved() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public boolean isDeleted() {
+            // TODO Auto-generated method stub
+            return false;
         }
 
         @Override
@@ -77,17 +98,20 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver<Entit
 
     //
 
-    private Class<Entity> entityClass = null;
+    private Class<?> contractClass = null;
+    private CrudRepository<Entity, EntityId> crudRepository = null;
 
-    public BaseSourceResolver(Class<Entity> entityClass) {
-        this.entityClass = entityClass;
+    public BaseSourceResolver(Class<?> contractClass) {
+        this.contractClass = contractClass;
     }
 
     @Override
-    public Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException {
-        if (!source.isActive()) {
+    public <ThatEntity> Source<ThatEntity> resolve(Source<ThatEntity> source, Type sourceType) //
+            throws SourceNotSupportedException {
+        if (!source.isLoaded()) {
             Entity entity = loadEntity(source.getParameters());
-            return new EmbeddedSource(source.getParameters(), entity);
+            new EmbeddedSource(source.getParameters(), entity);
+            return null;
         } else {
             return source;
         }
