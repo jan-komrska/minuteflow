@@ -34,7 +34,7 @@ class SourceWithEntity<Entity> implements Source<Entity> {
     @Getter(AccessLevel.NONE)
     private Entity entity = null;
 
-    private boolean loaded = false;
+    private boolean resolved = false;
     private boolean saved = false;
     private boolean deleted = false;
 
@@ -42,14 +42,14 @@ class SourceWithEntity<Entity> implements Source<Entity> {
 
     public SourceWithEntity(Entity entity) {
         this.entity = Objects.requireNonNull(entity);
-        this.loaded = true;
+        this.resolved = true;
     }
 
     //
 
     @Override
     public Entity getEntity() {
-        if (loaded) {
+        if (resolved) {
             return entity;
         } else {
             throw new IllegalStateException();
@@ -58,7 +58,7 @@ class SourceWithEntity<Entity> implements Source<Entity> {
 
     @Override
     public Entity saveEntity() {
-        if (loaded) {
+        if (resolved && !deleted) {
             saved = true;
             return entity;
         } else {
@@ -68,8 +68,7 @@ class SourceWithEntity<Entity> implements Source<Entity> {
 
     @Override
     public void deleteEntity() {
-        if (loaded) {
-            loaded = false;
+        if (resolved && !deleted) {
             deleted = true;
         } else {
             throw new IllegalStateException();

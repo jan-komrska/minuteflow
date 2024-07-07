@@ -21,6 +21,7 @@ package org.minuteflow.core.impl.repository;
  */
 
 import org.minuteflow.core.api.contract.Controller;
+import org.minuteflow.core.api.contract.SourceResolver;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
 import org.springframework.beans.BeansException;
@@ -47,6 +48,10 @@ public class RepositoryObserver implements DestructionAwareBeanPostProcessor, Or
     @Autowired
     private StateAccessorRepository stateAccessorRepository;
 
+    @Lazy
+    @Autowired
+    private SourceResolverRepository sourceResolverRepository;
+
     //
 
     public RepositoryObserver() {
@@ -65,6 +70,9 @@ public class RepositoryObserver implements DestructionAwareBeanPostProcessor, Or
         if (bean instanceof StateAccessor stateAccessor) {
             stateAccessorRepository.addStateAccessor(stateAccessor, beanName);
         }
+        if (bean instanceof SourceResolver sourceResolver) {
+            sourceResolverRepository.addSourceResolver(sourceResolver, beanName);
+        }
         //
         return bean;
     }
@@ -79,6 +87,9 @@ public class RepositoryObserver implements DestructionAwareBeanPostProcessor, Or
         }
         if (bean instanceof StateAccessor stateAccessor) {
             stateAccessorRepository.removeStateAccessor(stateAccessor, beanName);
+        }
+        if (bean instanceof SourceResolver sourceResolver) {
+            sourceResolverRepository.removeSourceResolver(sourceResolver, beanName);
         }
     }
 

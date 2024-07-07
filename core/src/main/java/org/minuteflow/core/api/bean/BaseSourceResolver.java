@@ -1,7 +1,5 @@
 package org.minuteflow.core.api.bean;
 
-import java.lang.reflect.Type;
-
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -22,10 +20,17 @@ import java.lang.reflect.Type;
  * =========================LICENSE_END==================================
  */
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
@@ -34,40 +39,29 @@ import org.springframework.data.repository.CrudRepository;
 import lombok.Getter;
 
 @Getter
-public abstract class BaseSourceResolver<Entity, EntityId> implements SourceResolver {
+public class BaseSourceResolver<Entity> implements SourceResolver {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
         private List<Object> parameters = null;
         private Entity entity = null;
-        private boolean active = false;
+
+        private boolean resolved = false;
+        private boolean saved = false;
+        private boolean deleted = false;
+
+        //
 
         public EmbeddedSource(List<Object> parameters, Entity entity) {
             this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
             this.entity = Objects.requireNonNull(entity);
-            this.active = true;
+            this.resolved = true;
         }
 
-        @Override
-        public boolean isLoaded() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        @Override
-        public boolean isSaved() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        @Override
-        public boolean isDeleted() {
-            // TODO Auto-generated method stub
-            return false;
-        }
+        //
 
         @Override
         public Entity getEntity() {
-            if (active) {
+            if (resolved) {
                 return entity;
             } else {
                 throw new IllegalStateException();
@@ -76,9 +70,9 @@ public abstract class BaseSourceResolver<Entity, EntityId> implements SourceReso
 
         @Override
         public Entity saveEntity() {
-            if (active) {
-                this.entity = BaseSourceResolver.this.saveEntity(entity);
-                return this.entity;
+            if (resolved) {
+                entity = BaseSourceResolver.this.saveEntity(entity);
+                return entity;
             } else {
                 throw new IllegalStateException();
             }
@@ -86,42 +80,86 @@ public abstract class BaseSourceResolver<Entity, EntityId> implements SourceReso
 
         @Override
         public void deleteEntity() {
-            if (active) {
+            if (resolved) {
                 BaseSourceResolver.this.deleteEntity(entity);
-                this.active = false;
+                deleted = true;
             } else {
                 throw new IllegalStateException();
             }
         }
-
     }
 
     //
 
     private Class<?> contractClass = null;
-    private CrudRepository<Entity, EntityId> crudRepository = null;
+    private Class<Entity> entityClass = null;
+    private CrudRepository<Entity, ?> crudRepository = null;
 
-    public BaseSourceResolver(Class<?> contractClass) {
+    //
+
+    public BaseSourceResolver(Class<?> contractClass, Class<Entity> entityClass, CrudRepository<Entity, ?> crudRepository) {
         this.contractClass = contractClass;
+        this.entityClass = entityClass;
+        this.crudRepository = crudRepository;
     }
 
+    //
+
+    private Type getType(Type type, TypeVariable<? extends Class<?>> variable) {
+        return TypeUtils.getTypeArguments(type, variable.getGenericDeclaration()).get(variable);
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
-    public <ThatEntity> Source<ThatEntity> resolve(Source<ThatEntity> source, Type sourceType) //
+    public <OtherEntity> Source<OtherEntity> resolve(Source<OtherEntity> source, Type sourceType) //
             throws SourceNotSupportedException {
-        if (!source.isLoaded()) {
-            Entity entity = loadEntity(source.getParameters());
-            new EmbeddedSource(source.getParameters(), entity);
-            return null;
+        if (source.isResolved() && !source.isDeleted()) {
+            throw new IllegalStateException();
+        }
+        //
+        Type entityType = getType(sourceType, Source.class.getTypeParameters()[0]);
+        Entity entity = loadEntity(source.getParameters());
+        //
+        if (TypeUtils.isInstance(entity, entityType)) {
+            return (Source<OtherEntity>) new EmbeddedSource(source.getParameters(), entity);
         } else {
-            return source;
+            throw new IllegalStateException();
         }
     }
 
     //
 
-    protected abstract Entity loadEntity(List<Object> parameters);
+    protected Entity loadEntity(List<Object> parameters) {
+        if (CollectionUtils.isEmpty(parameters) || !(parameters.get(0) instanceof String)) {
+            throw new IllegalStateException();
+        }
+        //
+        String methodName = (String) parameters.get(0);
+        Object[] args = parameters.subList(1, parameters.size()).toArray();
+        Object result;
+        //
+        try {
+            result = MethodUtils.invokeMethod(crudRepository, methodName, args);
+        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+        //
+        if (result instanceof Optional<?> optional) {
+            result = optional.orElse(null);
+        }
+        //
+        if (entityClass.isInstance(result)) {
+            return entityClass.cast(result);
+        } else {
+            throw new IllegalStateException();
+        }
+    }
 
-    protected abstract Entity saveEntity(Entity entity);
+    protected Entity saveEntity(Entity entity) {
+        return crudRepository.save(entity);
+    }
 
-    protected abstract void deleteEntity(Entity entity);
+    protected void deleteEntity(Entity entity) {
+        crudRepository.delete(entity);
+    }
 }
