@@ -49,7 +49,7 @@ class SourceWithEntity<Entity> implements Source<Entity> {
 
     @Override
     public Entity getEntity() {
-        if (resolved && !deleted) {
+        if (resolved) {
             return entity;
         } else {
             throw new IllegalStateException();

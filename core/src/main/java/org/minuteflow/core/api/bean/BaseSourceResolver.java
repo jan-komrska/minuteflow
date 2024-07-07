@@ -20,12 +20,15 @@ package org.minuteflow.core.api.bean;
  * =========================LICENSE_END==================================
  */
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
@@ -35,40 +38,29 @@ import org.springframework.data.repository.CrudRepository;
 import lombok.Getter;
 
 @Getter
-public abstract class BaseSourceResolver<Entity> implements SourceResolver {
+public class BaseSourceResolver<Entity> implements SourceResolver {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
         private List<Object> parameters = null;
         private Entity entity = null;
-        private boolean active = false;
+
+        private boolean resolved = false;
+        private boolean saved = false;
+        private boolean deleted = false;
+
+        //
 
         public EmbeddedSource(List<Object> parameters, Entity entity) {
             this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
             this.entity = Objects.requireNonNull(entity);
-            this.active = true;
+            this.resolved = true;
         }
 
-        @Override
-        public boolean isResolved() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        @Override
-        public boolean isSaved() {
-            // TODO Auto-generated method stub
-            return false;
-        }
-
-        @Override
-        public boolean isDeleted() {
-            // TODO Auto-generated method stub
-            return false;
-        }
+        //
 
         @Override
         public Entity getEntity() {
-            if (active) {
+            if (resolved) {
                 return entity;
             } else {
                 throw new IllegalStateException();
@@ -77,9 +69,9 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver {
 
         @Override
         public Entity saveEntity() {
-            if (active) {
-                this.entity = BaseSourceResolver.this.saveEntity(entity);
-                return this.entity;
+            if (resolved) {
+                entity = BaseSourceResolver.this.saveEntity(entity);
+                return entity;
             } else {
                 throw new IllegalStateException();
             }
@@ -87,20 +79,19 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver {
 
         @Override
         public void deleteEntity() {
-            if (active) {
+            if (resolved) {
                 BaseSourceResolver.this.deleteEntity(entity);
-                this.active = false;
+                deleted = true;
             } else {
                 throw new IllegalStateException();
             }
         }
-
     }
 
     //
 
     private Class<?> contractClass = null;
-    private Class<?> entityClass = null;
+    private Class<Entity> entityClass = null;
     private CrudRepository<Entity, ?> crudRepository = null;
 
     //
@@ -137,9 +128,29 @@ public abstract class BaseSourceResolver<Entity> implements SourceResolver {
 
     //
 
-    protected abstract Entity loadEntity(List<Object> parameters);
+    protected Entity loadEntity(List<Object> parameters) {
+        if (CollectionUtils.isEmpty(parameters)) {
+            throw new IllegalStateException();
+        }
+        //
+        if (parameters.get(0) instanceof String methodName) {
+            Object[] args = parameters.subList(1, parameters.size()).toArray();
+            //
+            try {
+                return entityClass.cast(MethodUtils.invokeMethod(crudRepository, methodName, args));
+            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
+                throw new IllegalStateException(ex);
+            }
+        } else {
+            throw new IllegalStateException();
+        }
+    }
 
-    protected abstract Entity saveEntity(Entity entity);
+    protected Entity saveEntity(Entity entity) {
+        return crudRepository.save(entity);
+    }
 
-    protected abstract void deleteEntity(Entity entity);
+    protected void deleteEntity(Entity entity) {
+        crudRepository.delete(entity);
+    }
 }
