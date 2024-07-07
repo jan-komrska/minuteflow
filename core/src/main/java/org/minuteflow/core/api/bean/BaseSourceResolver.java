@@ -25,6 +25,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -129,18 +130,26 @@ public class BaseSourceResolver<Entity> implements SourceResolver {
     //
 
     protected Entity loadEntity(List<Object> parameters) {
-        if (CollectionUtils.isEmpty(parameters)) {
+        if (CollectionUtils.isEmpty(parameters) || !(parameters.get(0) instanceof String)) {
             throw new IllegalStateException();
         }
         //
-        if (parameters.get(0) instanceof String methodName) {
-            Object[] args = parameters.subList(1, parameters.size()).toArray();
-            //
-            try {
-                return entityClass.cast(MethodUtils.invokeMethod(crudRepository, methodName, args));
-            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
-                throw new IllegalStateException(ex);
-            }
+        String methodName = (String) parameters.get(0);
+        Object[] args = parameters.subList(1, parameters.size()).toArray();
+        Object result;
+        //
+        try {
+            result = MethodUtils.invokeMethod(crudRepository, methodName, args);
+        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+        //
+        if (result instanceof Optional<?> optional) {
+            result = optional.orElse(null);
+        }
+        //
+        if (entityClass.isInstance(result)) {
+            return entityClass.cast(result);
         } else {
             throw new IllegalStateException();
         }
