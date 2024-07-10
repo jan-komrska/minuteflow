@@ -48,7 +48,7 @@ public class SourceResolverRepository {
     @ToString
     @EqualsAndHashCode
     private static class SourceResolverId {
-        private Class<?> contractClass = null;
+        private Class<?> entityClass = null;
     }
 
     //
@@ -65,21 +65,21 @@ public class SourceResolverRepository {
 
     //
 
-    public SourceResolver getSourceResolver(Class<?> contractClass) {
-        SourceResolverId stateAccessorId = new SourceResolverId(contractClass);
-        if (sourceResolverMap.containsKey(stateAccessorId)) {
-            String beanName = sourceResolverMap.get(stateAccessorId);
+    public SourceResolver<?> getSourceResolver(Class<?> entityClass) {
+        SourceResolverId sourceResolverId = new SourceResolverId(entityClass);
+        if (sourceResolverMap.containsKey(sourceResolverId)) {
+            String beanName = sourceResolverMap.get(sourceResolverId);
             return applicationContext.getBean(beanName, SourceResolver.class);
         } else {
             return null;
         }
     }
 
-    public void addSourceResolver(SourceResolver sourceResolver, String beanName) {
+    public void addSourceResolver(SourceResolver<?> sourceResolver, String beanName) {
         Objects.requireNonNull(sourceResolver);
         Objects.requireNonNull(beanName);
         //
-        SourceResolverId sourceResolverId = new SourceResolverId(sourceResolver.getContractClass());
+        SourceResolverId sourceResolverId = new SourceResolverId(sourceResolver.getEntityClass());
         String registeredBeanName = sourceResolverMap.putIfAbsent(sourceResolverId, beanName);
         if (Objects.isNull(registeredBeanName)) {
             log.debug("registered source resolver [" + sourceResolverId + "] implemented by [" + beanName + "]");
@@ -88,11 +88,11 @@ public class SourceResolverRepository {
         }
     }
 
-    public void removeSourceResolver(SourceResolver sourceResolver, String beanName) {
+    public void removeSourceResolver(SourceResolver<?> sourceResolver, String beanName) {
         Objects.requireNonNull(sourceResolver);
         Objects.requireNonNull(beanName);
         //
-        SourceResolverId sourceResolverId = new SourceResolverId(sourceResolver.getContractClass());
+        SourceResolverId sourceResolverId = new SourceResolverId(sourceResolver.getEntityClass());
         boolean removed = sourceResolverMap.remove(sourceResolverId, beanName);
         if (removed) {
             log.debug("unregistered source resolver [" + sourceResolverId + "]");
