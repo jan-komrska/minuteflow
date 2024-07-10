@@ -77,6 +77,16 @@ public class BaseMethodDescriptor implements MethodDescriptor {
                 return null;
             }
         }
+
+        public void setEntity(Object[] args, Object entity) {
+            args = ArrayUtils.nullToEmpty(args);
+            //
+            if ((0 <= entityIndex) && (entityIndex < args.length)) {
+                args[entityIndex] = entity;
+            } else {
+                throw new IllegalStateException();
+            }
+        }
     }
 
     //
@@ -95,15 +105,6 @@ public class BaseMethodDescriptor implements MethodDescriptor {
         return actionNameAccessorMap.get(method).getActionName();
     }
 
-    public int getEntityIndex(Method method) {
-        if (!entityAccessorMap.containsKey(method)) {
-            EntityAccessor entityAccessor = new EntityAccessor(method);
-            entityAccessorMap.putIfAbsent(method, entityAccessor);
-            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
-        }
-        return entityAccessorMap.get(method).getEntityIndex();
-    }
-
     public Object getEntity(Method method, Object[] args) {
         if (!entityAccessorMap.containsKey(method)) {
             EntityAccessor entityAccessor = new EntityAccessor(method);
@@ -111,5 +112,14 @@ public class BaseMethodDescriptor implements MethodDescriptor {
             log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
         }
         return entityAccessorMap.get(method).getEntity(args);
+    }
+
+    public void setEntity(Method method, Object[] args, Object entity) {
+        if (!entityAccessorMap.containsKey(method)) {
+            EntityAccessor entityAccessor = new EntityAccessor(method);
+            entityAccessorMap.putIfAbsent(method, entityAccessor);
+            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
+        }
+        entityAccessorMap.get(method).setEntity(args, entity);
     }
 }

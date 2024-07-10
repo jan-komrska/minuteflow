@@ -101,7 +101,7 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     //
 
     @Override
-    public Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException {
+    public Source<Entity> resolve(Source<?> source) throws SourceNotSupportedException {
         if (source.isResolved() && !source.isDeleted()) {
             throw new IllegalStateException();
         }

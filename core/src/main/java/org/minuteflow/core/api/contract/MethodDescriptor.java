@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 public interface MethodDescriptor {
     public String getActionName(Method method);
 
-    public int getEntityIndex(Method method);
-
     public Object getEntity(Method method, Object[] args);
+
+    public void setEntity(Method method, Object[] args, Object entity);
 }
