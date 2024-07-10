@@ -95,6 +95,15 @@ public class BaseMethodDescriptor implements MethodDescriptor {
         return actionNameAccessorMap.get(method).getActionName();
     }
 
+    public int getEntityIndex(Method method) {
+        if (!entityAccessorMap.containsKey(method)) {
+            EntityAccessor entityAccessor = new EntityAccessor(method);
+            entityAccessorMap.putIfAbsent(method, entityAccessor);
+            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
+        }
+        return entityAccessorMap.get(method).getEntityIndex();
+    }
+
     public Object getEntity(Method method, Object[] args) {
         if (!entityAccessorMap.containsKey(method)) {
             EntityAccessor entityAccessor = new EntityAccessor(method);

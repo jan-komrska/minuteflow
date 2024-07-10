@@ -21,8 +21,6 @@ package org.minuteflow.core.api.bean;
  */
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,7 +28,6 @@ import java.util.Optional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
@@ -39,7 +36,7 @@ import org.springframework.data.repository.CrudRepository;
 import lombok.Getter;
 
 @Getter
-public class BaseSourceResolver<Entity> implements SourceResolver {
+public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
         private List<Object> parameters = null;
@@ -91,37 +88,28 @@ public class BaseSourceResolver<Entity> implements SourceResolver {
 
     //
 
-    private Class<?> contractClass = null;
     private Class<Entity> entityClass = null;
     private CrudRepository<Entity, ?> crudRepository = null;
 
     //
 
-    public BaseSourceResolver(Class<?> contractClass, Class<Entity> entityClass, CrudRepository<Entity, ?> crudRepository) {
-        this.contractClass = contractClass;
+    public BaseSourceResolver(Class<Entity> entityClass, CrudRepository<Entity, ?> crudRepository) {
         this.entityClass = entityClass;
         this.crudRepository = crudRepository;
     }
 
     //
 
-    private Type getType(Type type, TypeVariable<? extends Class<?>> variable) {
-        return TypeUtils.getTypeArguments(type, variable.getGenericDeclaration()).get(variable);
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
-    public <OtherEntity> Source<OtherEntity> resolve(Source<OtherEntity> source, Type sourceType) //
-            throws SourceNotSupportedException {
+    public Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException {
         if (source.isResolved() && !source.isDeleted()) {
             throw new IllegalStateException();
         }
         //
-        Type entityType = getType(sourceType, Source.class.getTypeParameters()[0]);
         Entity entity = loadEntity(source.getParameters());
         //
-        if (TypeUtils.isInstance(entity, entityType)) {
-            return (Source<OtherEntity>) new EmbeddedSource(source.getParameters(), entity);
+        if (entityClass.isInstance(entity)) {
+            return new EmbeddedSource(source.getParameters(), entity);
         } else {
             throw new IllegalStateException();
         }

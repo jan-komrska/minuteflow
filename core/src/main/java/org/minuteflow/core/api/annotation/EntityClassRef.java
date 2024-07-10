@@ -1,4 +1,4 @@
-package org.minuteflow.core.api.contract;
+package org.minuteflow.core.api.annotation;
 
 /*-
  * ========================LICENSE_START=================================
@@ -20,10 +20,13 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
-import org.minuteflow.core.api.exception.SourceNotSupportedException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface SourceResolver<Entity> {
-    public Class<Entity> getEntityClass();
-
-    public Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException;
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE })
+public @interface EntityClassRef {
+    public Class<?> value();
 }

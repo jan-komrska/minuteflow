@@ -30,13 +30,18 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.minuteflow.core.api.annotation.EntityClassRef;
 import org.minuteflow.core.api.contract.Controller;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.MethodDescriptor;
+import org.minuteflow.core.api.contract.Source;
+import org.minuteflow.core.api.contract.SourceResolver;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateManager;
 import org.minuteflow.core.api.exception.ControllerNotFoundException;
 import org.minuteflow.core.impl.repository.ControllerRepository;
+import org.minuteflow.core.impl.repository.SourceResolverRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -86,6 +91,9 @@ public class BaseDispatcher implements Dispatcher {
     private ControllerRepository controllerRepository;
 
     @Autowired
+    private SourceResolverRepository sourceResolverRepository;
+
+    @Autowired
     private MethodDescriptor methodDescriptor;
 
     //
@@ -125,8 +133,29 @@ public class BaseDispatcher implements Dispatcher {
 
     @Override
     public Object dispatch(Method method, Object[] args) throws Throwable {
+        args = ArrayUtils.nullToEmpty(args);
+        args = Arrays.copyOf(args, args.length);
+        //
+        int entityIndex = methodDescriptor.getEntityIndex(method);
+        if (entityIndex != -1) {
+            if (args[entityIndex] instanceof Source<?> source) {
+                if (!source.isResolved()) {
+                    // Type entityType = getType(method.getGenericParameterTypes()[index], Source.class.getTypeParameters()[0]);
+                    Class<?> entityClass = method.getDeclaringClass().getAnnotation(EntityClassRef.class).value();
+                    // TypeUtils.isAssignable(entityType, entityType)
+                    SourceResolver<Object> sourceResolver = (SourceResolver<Object>) sourceResolverRepository.getSourceResolver(entityClass);
+                    args[entityIndex] = sourceResolver.resolve((Source<Object>) source);
+                }
+            }
+        } else {
+            throw new IllegalStateException();
+        }
+        //
         String actionName = methodDescriptor.getActionName(method);
         Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
+        if (entity instanceof Source<?> source) {
+            entity = source.getEntity();
+        }
         //
         List<State> states = envelopeAndSortStates(stateManager.getStates(entity));
         for (State state : states) {
