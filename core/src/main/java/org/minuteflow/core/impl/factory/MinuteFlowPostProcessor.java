@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
@@ -53,6 +54,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -212,7 +214,9 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                         String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
                         Class<?> repositoryClass = minuteEntityRef.getClass("repositoryClass");
                         registerMinuteEntity(registry, beanName, entityClass, statePatterns);
-                        registerMinuteSourceResolver(registry, beanName, entityClass, repositoryClass);
+                        if (ClassUtils.isAssignable(repositoryClass, CrudRepository.class)) {
+                            registerMinuteSourceResolver(registry, beanName, entityClass, repositoryClass);
+                        }
                     }
                 }
             }
