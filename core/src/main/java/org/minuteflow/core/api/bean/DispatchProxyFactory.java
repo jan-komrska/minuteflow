@@ -44,9 +44,8 @@ public class DispatchProxyFactory<Contract> extends AbstractFactoryBean<Contract
 
     //
 
-    public DispatchProxyFactory(Class<Contract> contract, Dispatcher dispatcher) {
+    public DispatchProxyFactory(Class<Contract> contract) {
         this.contract = contract;
-        this.dispatcher = dispatcher;
     }
 
     //

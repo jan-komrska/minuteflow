@@ -33,4 +33,6 @@ public @interface MinuteEntityRef {
     public Class<?> entityClass();
 
     public String[] statePattern();
+
+    public Class<?> repositoryClass() default Void.class;
 }

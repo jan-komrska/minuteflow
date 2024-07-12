@@ -136,27 +136,21 @@ public class BaseDispatcher implements Dispatcher {
         args = ArrayUtils.nullToEmpty(args);
         args = Arrays.copyOf(args, args.length);
         //
-        int entityIndex = methodDescriptor.getEntityIndex(method);
-        if (entityIndex != -1) {
-            if (args[entityIndex] instanceof Source<?> source) {
-                if (!source.isResolved()) {
-                    // Type entityType = getType(method.getGenericParameterTypes()[index], Source.class.getTypeParameters()[0]);
-                    Class<?> entityClass = method.getDeclaringClass().getAnnotation(EntityClassRef.class).value();
-                    // TypeUtils.isAssignable(entityType, entityType)
-                    SourceResolver<Object> sourceResolver = (SourceResolver<Object>) sourceResolverRepository.getSourceResolver(entityClass);
-                    args[entityIndex] = sourceResolver.resolve((Source<Object>) source);
-                }
-            }
-        } else {
-            throw new IllegalStateException();
+        Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
+        boolean hasEntityClass = (method.getDeclaringClass().getAnnotationsByType(EntityClassRef.class) != null);
+        boolean isUnresolvedSource = (entity instanceof Source<?> source) ? !source.isResolved() : false;
+        if (hasEntityClass && isUnresolvedSource) {
+            Class<?> entityClass = method.getDeclaringClass().getAnnotation(EntityClassRef.class).value();
+            SourceResolver<?> sourceResolver = sourceResolverRepository.getSourceResolver(entityClass);
+            entity = sourceResolver.resolve((Source<?>) entity);
+            methodDescriptor.setEntity(method, args, entity);
+        }
+        //
+        if (entity instanceof Source<?> source) {
+            entity = Objects.requireNonNull(source.getEntity());
         }
         //
         String actionName = methodDescriptor.getActionName(method);
-        Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
-        if (entity instanceof Source<?> source) {
-            entity = source.getEntity();
-        }
-        //
         List<State> states = envelopeAndSortStates(stateManager.getStates(entity));
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);

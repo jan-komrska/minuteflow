@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.annotation.ControllerRef;
 import org.minuteflow.core.api.annotation.ControllerRefType;
@@ -36,13 +37,16 @@ import org.minuteflow.core.api.annotation.MinuteEntityRefs;
 import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.annotation.MinuteServiceRefs;
 import org.minuteflow.core.api.bean.BaseController;
+import org.minuteflow.core.api.bean.BaseSourceResolver;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
 import org.minuteflow.core.api.bean.ExpressionState;
 import org.minuteflow.core.api.bean.ExpressionStateType;
+import org.minuteflow.core.api.contract.Dispatcher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
@@ -51,6 +55,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -107,7 +112,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.setPrimary(true);
         beanDefinitionBuilder.setLazyInit(false);
         beanDefinitionBuilder.addConstructorArgValue(serviceClass);
-        beanDefinitionBuilder.addConstructorArgReference("org.minuteflow.core.impl.bean.BaseDispatcher");
+        beanDefinitionBuilder.addPropertyValue("dispatcher", new RuntimeBeanReference(Dispatcher.class));
         //
         registry.registerBeanDefinition(minuteServiceName, beanDefinitionBuilder.getBeanDefinition());
         //
@@ -124,6 +129,22 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.setLazyInit(false);
         beanDefinitionBuilder.addConstructorArgValue(entityClass);
         beanDefinitionBuilder.addConstructorArgValue(statePatterns);
+        //
+        registry.registerBeanDefinition(minuteEntityName, beanDefinitionBuilder.getBeanDefinition());
+        //
+        log.debug("Registered minute entity [" + minuteEntityName + "]");
+        //
+        return minuteEntityName;
+    }
+
+    private String registerMinuteSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, Class<?> entityClass, Class<?> repositoryClass) {
+        String minuteEntityName = nextBeanName(parentBeanName, "minute-source-resolver");
+        //
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseSourceResolver.class);
+        beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
+        beanDefinitionBuilder.setLazyInit(false);
+        beanDefinitionBuilder.addConstructorArgValue(entityClass);
+        beanDefinitionBuilder.addConstructorArgValue(new RuntimeBeanReference(repositoryClass));
         //
         registry.registerBeanDefinition(minuteEntityName, beanDefinitionBuilder.getBeanDefinition());
         //
@@ -192,7 +213,11 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
                         Class<?> entityClass = minuteEntityRef.getClass("entityClass");
                         String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
+                        Class<?> repositoryClass = minuteEntityRef.getClass("repositoryClass");
                         registerMinuteEntity(registry, beanName, entityClass, statePatterns);
+                        if (ClassUtils.isAssignable(repositoryClass, CrudRepository.class)) {
+                            registerMinuteSourceResolver(registry, beanName, entityClass, repositoryClass);
+                        }
                     }
                 }
             }

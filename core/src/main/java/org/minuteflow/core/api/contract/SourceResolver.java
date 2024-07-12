@@ -25,5 +25,5 @@ import org.minuteflow.core.api.exception.SourceNotSupportedException;
 public interface SourceResolver<Entity> {
     public Class<Entity> getEntityClass();
 
-    public Source<Entity> resolve(Source<Entity> source) throws SourceNotSupportedException;
+    public Source<Entity> resolve(Source<?> source) throws SourceNotSupportedException;
 }
