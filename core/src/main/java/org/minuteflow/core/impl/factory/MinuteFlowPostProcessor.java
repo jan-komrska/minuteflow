@@ -41,6 +41,7 @@ import org.minuteflow.core.api.bean.BaseSourceResolver;
 import org.minuteflow.core.api.bean.DispatchProxyFactory;
 import org.minuteflow.core.api.bean.ExpressionState;
 import org.minuteflow.core.api.bean.ExpressionStateType;
+import org.minuteflow.core.api.contract.Dispatcher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -111,7 +112,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.setPrimary(true);
         beanDefinitionBuilder.setLazyInit(false);
         beanDefinitionBuilder.addConstructorArgValue(serviceClass);
-        beanDefinitionBuilder.addConstructorArgReference("org.minuteflow.core.impl.bean.BaseDispatcher");
+        beanDefinitionBuilder.addPropertyValue("dispatcher", new RuntimeBeanReference(Dispatcher.class));
         //
         registry.registerBeanDefinition(minuteServiceName, beanDefinitionBuilder.getBeanDefinition());
         //
