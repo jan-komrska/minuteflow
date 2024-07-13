@@ -22,9 +22,11 @@ package org.minuteflow.tstapp;
 
 import java.util.Set;
 
+import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateManager;
 import org.minuteflow.tstapp.multi.OrderEntity;
+import org.minuteflow.tstapp.multi.OrderEntityRepository;
 import org.minuteflow.tstapp.multi.OrderManager;
 import org.minuteflow.tstapp.oop.AnimalEntity;
 import org.minuteflow.tstapp.oop.AnimalEntityType;
@@ -57,6 +59,9 @@ public class Application {
     //
 
     @Autowired
+    private OrderEntityRepository orderEntityRepository;
+
+    @Autowired
     private OrderManager orderManager;
 
     @Autowired
@@ -72,9 +77,11 @@ public class Application {
         orderEntity.setName("Order lunch");
         stateManager.setStates(orderEntity, Set.of(orderStateOpen));
         //
-        orderManager.startOrder(orderEntity);
-        orderManager.orderPaymentDone(orderEntity);
-        orderManager.orderPackagingDone(orderEntity);
+        orderEntityRepository.save(orderEntity);
+        //
+        orderManager.startOrder(Source.withParameters("findById", orderEntity.getId()));
+        orderManager.orderPaymentDone(Source.withParameters("findById", orderEntity.getId()));
+        orderManager.orderPackagingDone(Source.withParameters("findById", orderEntity.getId()));
     }
 
     //

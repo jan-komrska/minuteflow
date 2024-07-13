@@ -27,6 +27,7 @@ import org.minuteflow.core.api.annotation.ControllerRefType;
 import org.minuteflow.core.api.annotation.MinuteEntityRef;
 import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
+import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @Import(MinuteFlowConfiguration.class)
 @MinuteServiceRef(OrderManager.class)
-@MinuteEntityRef(entityClass = OrderEntity.class, statePattern = { "orderState*", "orderManager*" })
+@MinuteEntityRef(entityClass = OrderEntity.class, statePattern = { "orderState*", "orderManager*" }, repositoryClass = OrderEntityRepository.class)
 public class OrderFlowConfiguration {
     @Bean
     public State orderStateOpen() {
@@ -80,13 +81,15 @@ public class OrderFlowConfiguration {
         return new OrderManager() {
             @Override
             @ActionRef
-            public void startOrder(OrderEntity order) {
+            public void startOrder(Source<OrderEntity> orderSource) {
+                OrderEntity order = orderSource.getEntity();
                 log.info("startOrder: " + order);
                 stateManager.updateState(order, //
                         new State[] { orderStateOpen() }, //
                         new State[] { orderStatePaymentRequested(), orderStatePackagingRequested() } //
                 );
                 log.info("  - updated: " + order);
+                orderSource.saveEntity();
             }
         };
     }
@@ -103,12 +106,14 @@ public class OrderFlowConfiguration {
 
             @Override
             @ActionRef
-            public void orderPaymentDone(OrderEntity order) {
+            public void orderPaymentDone(Source<OrderEntity> orderSource) {
+                OrderEntity order = orderSource.getEntity();
                 log.info("orderPaymentDone: " + order);
                 stateManager.updateState(order, orderStatePaymentRequested(), orderStatePaymentDone());
                 log.info("  - updated: " + order);
                 //
-                orderManager.finishOrder(order);
+                orderManager.finishOrder(orderSource);
+                orderSource.saveEntity();
             }
         };
     }
@@ -125,12 +130,14 @@ public class OrderFlowConfiguration {
 
             @Override
             @ActionRef
-            public void orderPackagingDone(OrderEntity order) {
+            public void orderPackagingDone(Source<OrderEntity> orderSource) {
+                OrderEntity order = orderSource.getEntity();
                 log.info("orderPackagingDone: " + order);
                 stateManager.updateState(order, orderStatePackagingRequested(), orderStatePackagingDone());
                 log.info("  - updated: " + order);
                 //
-                orderManager.finishOrder(order);
+                orderManager.finishOrder(orderSource);
+                orderSource.saveEntity();
             }
         };
     }
@@ -141,13 +148,15 @@ public class OrderFlowConfiguration {
         return new OrderManager() {
             @Override
             @ActionRef
-            public void finishOrder(OrderEntity order) {
+            public void finishOrder(Source<OrderEntity> orderSource) {
+                OrderEntity order = orderSource.getEntity();
                 log.info("finishOrder: " + order);
                 stateManager.updateState(order, //
                         new State[] { orderStatePaymentDone(), orderStatePackagingDone() }, //
                         new State[] { orderStateDone() } //
                 );
                 log.info("  - updated: " + order);
+                orderSource.saveEntity();
             }
         };
     }
@@ -158,9 +167,11 @@ public class OrderFlowConfiguration {
         return new OrderManager() {
             @Override
             @ActionRef
-            public void finishOrder(OrderEntity order) {
+            public void finishOrder(Source<OrderEntity> orderSource) {
+                OrderEntity order = orderSource.getEntity();
                 log.info("(ignore) finishOrder: " + order);
                 log.info("  - (not) updated: " + order);
+                orderSource.saveEntity();
             }
         };
     }
