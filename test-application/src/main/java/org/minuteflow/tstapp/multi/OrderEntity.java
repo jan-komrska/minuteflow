@@ -22,6 +22,12 @@ package org.minuteflow.tstapp.multi;
 
 import java.util.Set;
 
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,8 +37,15 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
+@Entity
+@Table(name = "tstapp_order")
 public class OrderEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
+    @Convert(converter = SetToStringConverter.class)
     private Set<String> states;
 }
