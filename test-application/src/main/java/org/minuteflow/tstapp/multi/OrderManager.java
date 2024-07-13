@@ -1,5 +1,7 @@
 package org.minuteflow.tstapp.multi;
 
+import org.minuteflow.core.api.annotation.EntityClassRef;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-test-application
@@ -21,21 +23,23 @@ package org.minuteflow.tstapp.multi;
  */
 
 import org.minuteflow.core.api.annotation.EntityRef;
+import org.minuteflow.core.api.contract.Source;
 
+@EntityClassRef(OrderEntity.class)
 public interface OrderManager {
-    public default void startOrder(@EntityRef OrderEntity order) {
+    public default void startOrder(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 
-    public default void finishOrder(@EntityRef OrderEntity order) {
+    public default void finishOrder(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 
-    public default void orderPaymentDone(@EntityRef OrderEntity order) {
+    public default void orderPaymentDone(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 
-    public default void orderPackagingDone(@EntityRef OrderEntity order) {
+    public default void orderPackagingDone(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 }

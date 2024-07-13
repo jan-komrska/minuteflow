@@ -22,6 +22,7 @@ package org.minuteflow.tstapp;
 
 import java.util.Set;
 
+import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateManager;
 import org.minuteflow.tstapp.multi.OrderEntity;
@@ -78,9 +79,9 @@ public class Application {
         //
         orderEntityRepository.save(orderEntity);
         //
-        orderManager.startOrder(orderEntity);
-        orderManager.orderPaymentDone(orderEntity);
-        orderManager.orderPackagingDone(orderEntity);
+        orderManager.startOrder(Source.withParameters("findById", orderEntity.getId()));
+        orderManager.orderPaymentDone(Source.withParameters("findById", orderEntity.getId()));
+        orderManager.orderPackagingDone(Source.withParameters("findById", orderEntity.getId()));
     }
 
     //
