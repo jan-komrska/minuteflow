@@ -39,10 +39,10 @@ import lombok.Getter;
 public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
-        private List<Object> parameters = null;
+        private final List<Object> parameters;
         private Entity entity = null;
 
-        private boolean resolved = false;
+        private final boolean resolved = true;
         private boolean saved = false;
         private boolean deleted = false;
 
@@ -51,38 +51,20 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
         public EmbeddedSource(List<Object> parameters, Entity entity) {
             this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
             this.entity = Objects.requireNonNull(entity);
-            this.resolved = true;
         }
 
         //
 
         @Override
-        public Entity getEntity() {
-            if (resolved) {
-                return entity;
-            } else {
-                throw new IllegalStateException();
-            }
-        }
-
-        @Override
         public Entity saveEntity() {
-            if (resolved) {
-                entity = BaseSourceResolver.this.saveEntity(entity);
-                return entity;
-            } else {
-                throw new IllegalStateException();
-            }
+            entity = BaseSourceResolver.this.saveEntity(entity);
+            return entity;
         }
 
         @Override
         public void deleteEntity() {
-            if (resolved) {
-                BaseSourceResolver.this.deleteEntity(entity);
-                deleted = true;
-            } else {
-                throw new IllegalStateException();
-            }
+            BaseSourceResolver.this.deleteEntity(entity);
+            deleted = true;
         }
     }
 
