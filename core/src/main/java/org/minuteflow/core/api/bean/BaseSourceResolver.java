@@ -102,7 +102,7 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
 
     @Override
     public Source<Entity> resolve(Source<?> source) throws SourceNotSupportedException {
-        if (source.isResolved() && !source.isDeleted()) {
+        if (source.isResolved()) {
             throw new IllegalStateException();
         }
         //
@@ -118,22 +118,25 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     //
 
     protected Entity loadEntity(List<Object> parameters) {
-        if (CollectionUtils.isEmpty(parameters) || !(parameters.get(0) instanceof String)) {
+        if (CollectionUtils.isEmpty(parameters)) {
             throw new IllegalStateException();
         }
         //
-        String methodName = (String) parameters.get(0);
-        Object[] args = parameters.subList(1, parameters.size()).toArray();
-        Object result;
-        //
-        try {
-            result = MethodUtils.invokeMethod(crudRepository, methodName, args);
-        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
+        String methodName;
+        if (parameters.get(0) instanceof String value) {
+            methodName = value;
+        } else {
+            throw new IllegalStateException();
         }
         //
-        if (result instanceof Optional<?> optional) {
-            result = optional.orElse(null);
+        Object[] args = parameters.subList(1, parameters.size()).toArray();
+        //
+        Object result;
+        try {
+            result = MethodUtils.invokeMethod(crudRepository, methodName, args);
+            result = (result instanceof Optional<?> optional) ? optional.orElse(null) : result;
+        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
         }
         //
         if (entityClass.isInstance(result)) {
