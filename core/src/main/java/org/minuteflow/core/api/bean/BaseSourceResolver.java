@@ -57,14 +57,22 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
 
         @Override
         public Entity saveEntity() {
-            entity = BaseSourceResolver.this.saveEntity(entity);
-            return entity;
+            if (!deleted) {
+                entity = BaseSourceResolver.this.saveEntity(entity);
+                return entity;
+            } else {
+                throw new IllegalStateException();
+            }
         }
 
         @Override
         public void deleteEntity() {
-            BaseSourceResolver.this.deleteEntity(entity);
-            deleted = true;
+            if (!deleted) {
+                BaseSourceResolver.this.deleteEntity(entity);
+                deleted = true;
+            } else {
+                throw new IllegalStateException();
+            }
         }
     }
 
