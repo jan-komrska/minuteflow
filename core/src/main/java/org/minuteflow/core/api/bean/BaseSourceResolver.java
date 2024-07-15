@@ -39,10 +39,10 @@ import lombok.Getter;
 public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     @Getter
     private class EmbeddedSource implements Source<Entity> {
-        private List<Object> parameters = null;
+        private final List<Object> parameters;
         private Entity entity = null;
 
-        private boolean resolved = false;
+        private final boolean resolved = true;
         private boolean saved = false;
         private boolean deleted = false;
 
@@ -51,23 +51,13 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
         public EmbeddedSource(List<Object> parameters, Entity entity) {
             this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
             this.entity = Objects.requireNonNull(entity);
-            this.resolved = true;
         }
 
         //
 
         @Override
-        public Entity getEntity() {
-            if (resolved) {
-                return entity;
-            } else {
-                throw new IllegalStateException();
-            }
-        }
-
-        @Override
         public Entity saveEntity() {
-            if (resolved) {
+            if (!deleted) {
                 entity = BaseSourceResolver.this.saveEntity(entity);
                 return entity;
             } else {
@@ -77,7 +67,7 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
 
         @Override
         public void deleteEntity() {
-            if (resolved) {
+            if (!deleted) {
                 BaseSourceResolver.this.deleteEntity(entity);
                 deleted = true;
             } else {
@@ -102,38 +92,34 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
 
     @Override
     public Source<Entity> resolve(Source<?> source) throws SourceNotSupportedException {
-        if (source.isResolved() && !source.isDeleted()) {
+        if (source.isResolved()) {
             throw new IllegalStateException();
         }
         //
         Entity entity = loadEntity(source.getParameters());
+        return new EmbeddedSource(source.getParameters(), entity);
+    }
+
+    protected Entity loadEntity(List<Object> parameters) {
+        if (CollectionUtils.isEmpty(parameters)) {
+            throw new IllegalStateException();
+        }
         //
-        if (entityClass.isInstance(entity)) {
-            return new EmbeddedSource(source.getParameters(), entity);
+        String methodName;
+        if (parameters.get(0) instanceof String value) {
+            methodName = value;
         } else {
             throw new IllegalStateException();
         }
-    }
-
-    //
-
-    protected Entity loadEntity(List<Object> parameters) {
-        if (CollectionUtils.isEmpty(parameters) || !(parameters.get(0) instanceof String)) {
-            throw new IllegalStateException();
-        }
         //
-        String methodName = (String) parameters.get(0);
         Object[] args = parameters.subList(1, parameters.size()).toArray();
-        Object result;
         //
+        Object result;
         try {
             result = MethodUtils.invokeMethod(crudRepository, methodName, args);
+            result = (result instanceof Optional<?> optional) ? optional.orElse(null) : result;
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
             throw new IllegalStateException(ex);
-        }
-        //
-        if (result instanceof Optional<?> optional) {
-            result = optional.orElse(null);
         }
         //
         if (entityClass.isInstance(result)) {

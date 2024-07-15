@@ -24,17 +24,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 class SourceWithEntity<Entity> implements Source<Entity> {
-    private List<Object> parameters = Collections.emptyList();
+    private final List<Object> parameters = Collections.emptyList();
+    private final Entity entity;
 
-    @Getter(AccessLevel.NONE)
-    private Entity entity = null;
-
-    private boolean resolved = false;
+    private final boolean resolved = true;
     private boolean saved = false;
     private boolean deleted = false;
 
@@ -42,23 +39,13 @@ class SourceWithEntity<Entity> implements Source<Entity> {
 
     public SourceWithEntity(Entity entity) {
         this.entity = Objects.requireNonNull(entity);
-        this.resolved = true;
     }
 
     //
 
     @Override
-    public Entity getEntity() {
-        if (resolved) {
-            return entity;
-        } else {
-            throw new IllegalStateException();
-        }
-    }
-
-    @Override
     public Entity saveEntity() {
-        if (resolved && !deleted) {
+        if (!deleted) {
             saved = true;
             return entity;
         } else {
@@ -68,7 +55,7 @@ class SourceWithEntity<Entity> implements Source<Entity> {
 
     @Override
     public void deleteEntity() {
-        if (resolved && !deleted) {
+        if (!deleted) {
             deleted = true;
         } else {
             throw new IllegalStateException();
