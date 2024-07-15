@@ -89,15 +89,8 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
         }
         //
         Entity entity = loadEntity(source.getParameters());
-        //
-        if (entityClass.isInstance(entity)) {
-            return new EmbeddedSource(source.getParameters(), entity);
-        } else {
-            throw new IllegalStateException();
-        }
+        return new EmbeddedSource(source.getParameters(), entity);
     }
-
-    //
 
     protected Entity loadEntity(List<Object> parameters) {
         if (CollectionUtils.isEmpty(parameters)) {
