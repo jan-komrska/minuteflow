@@ -137,9 +137,9 @@ public class BaseDispatcher implements Dispatcher {
         args = Arrays.copyOf(args, args.length);
         //
         Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
-        boolean hasEntityClass = (method.getDeclaringClass().getAnnotationsByType(EntityClassRef.class) != null);
         boolean isUnresolvedSource = (entity instanceof Source<?> source) ? !source.isResolved() : false;
-        if (hasEntityClass && isUnresolvedSource) {
+        boolean hasEntityClass = (method.getDeclaringClass().getAnnotationsByType(EntityClassRef.class) != null);
+        if (isUnresolvedSource && hasEntityClass) {
             Class<?> entityClass = method.getDeclaringClass().getAnnotation(EntityClassRef.class).value();
             SourceResolver<?> sourceResolver = sourceResolverRepository.getSourceResolver(entityClass);
             entity = sourceResolver.resolve((Source<?>) entity);
@@ -147,8 +147,10 @@ public class BaseDispatcher implements Dispatcher {
         }
         //
         if (entity instanceof Source<?> source) {
-            entity = Objects.requireNonNull(source.getEntity());
+            entity = (source.isResolved()) ? source.getEntity() : null;
         }
+        //
+        Objects.requireNonNull(entity);
         //
         String actionName = methodDescriptor.getActionName(method);
         List<State> states = envelopeAndSortStates(stateManager.getStates(entity));
