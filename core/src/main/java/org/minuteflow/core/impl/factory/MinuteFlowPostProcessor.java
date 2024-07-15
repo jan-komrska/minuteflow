@@ -138,7 +138,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
     }
 
     private String registerMinuteSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, Class<?> entityClass, Class<?> repositoryClass) {
-        String minuteEntityName = nextBeanName(parentBeanName, "minute-source-resolver");
+        String minuteSourceResolverName = nextBeanName(parentBeanName, "minute-source-resolver");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseSourceResolver.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -146,11 +146,11 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.addConstructorArgValue(entityClass);
         beanDefinitionBuilder.addConstructorArgValue(new RuntimeBeanReference(repositoryClass));
         //
-        registry.registerBeanDefinition(minuteEntityName, beanDefinitionBuilder.getBeanDefinition());
+        registry.registerBeanDefinition(minuteSourceResolverName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered minute entity [" + minuteEntityName + "]");
+        log.debug("Registered minute source resolver [" + minuteSourceResolverName + "]");
         //
-        return minuteEntityName;
+        return minuteSourceResolverName;
     }
 
     private <TargetAnnotation extends Annotation> List<MergedAnnotation<TargetAnnotation>> getAnnotations( //
