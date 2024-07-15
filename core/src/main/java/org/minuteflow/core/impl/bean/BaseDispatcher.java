@@ -148,9 +148,8 @@ public class BaseDispatcher implements Dispatcher {
         //
         if (entity instanceof Source<?> source) {
             entity = (source.isResolved()) ? source.getEntity() : null;
+            entity = Objects.requireNonNull(entity);
         }
-        //
-        Objects.requireNonNull(entity);
         //
         String actionName = methodDescriptor.getActionName(method);
         List<State> states = envelopeAndSortStates(stateManager.getStates(entity));
