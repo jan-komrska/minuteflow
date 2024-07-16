@@ -24,32 +24,43 @@ import java.util.Arrays;
 import java.util.List;
 
 public interface Source<Entity> {
+    public String getName();
+
     public List<Object> getParameters();
 
     //
 
     public boolean isResolved();
 
-    public boolean isSaved();
+    public boolean isForUpdate();
 
-    public boolean isDeleted();
+    public boolean isForDelete();
 
     //
 
     public Entity getEntity();
 
-    public Entity saveEntity();
+    public void markForUpdate();
 
-    public void deleteEntity();
+    public void markForDelete();
 
     //
 
-    public static <Entity> Source<Entity> withParameters(Object... parameters) {
-        List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
-        return new SourceWithParameters<Entity>(parametersAsList);
+    public static <Entity> Source<Entity> with(String name, List<Object> parameters, Entity entity) {
+        return new SourceWithEntity<Entity>(name, parameters, entity);
     }
 
     public static <Entity> Source<Entity> withEntity(Entity entity) {
         return new SourceWithEntity<Entity>(entity);
+    }
+
+    public static <Entity> Source<Entity> withNameAndParameters(String name, Object... parameters) {
+        List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
+        return new SourceWithParameters<Entity>(name, parametersAsList);
+    }
+
+    public static <Entity> Source<Entity> withParameters(Object... parameters) {
+        List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
+        return new SourceWithParameters<Entity>(parametersAsList);
     }
 }

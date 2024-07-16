@@ -89,7 +89,6 @@ public class OrderFlowConfiguration {
                         new State[] { orderStatePaymentRequested(), orderStatePackagingRequested() } //
                 );
                 log.info("  - updated: " + order);
-                orderSource.saveEntity();
             }
         };
     }
@@ -113,7 +112,6 @@ public class OrderFlowConfiguration {
                 log.info("  - updated: " + order);
                 //
                 orderManager.finishOrder(orderSource);
-                orderSource.saveEntity();
             }
         };
     }
@@ -137,7 +135,6 @@ public class OrderFlowConfiguration {
                 log.info("  - updated: " + order);
                 //
                 orderManager.finishOrder(orderSource);
-                orderSource.saveEntity();
             }
         };
     }
@@ -156,7 +153,6 @@ public class OrderFlowConfiguration {
                         new State[] { orderStateDone() } //
                 );
                 log.info("  - updated: " + order);
-                orderSource.saveEntity();
             }
         };
     }
@@ -171,7 +167,6 @@ public class OrderFlowConfiguration {
                 OrderEntity order = orderSource.getEntity();
                 log.info("(ignore) finishOrder: " + order);
                 log.info("  - (not) updated: " + order);
-                orderSource.saveEntity();
             }
         };
     }

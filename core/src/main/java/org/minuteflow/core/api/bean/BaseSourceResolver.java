@@ -22,11 +22,9 @@ package org.minuteflow.core.api.bean;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
@@ -37,47 +35,6 @@ import lombok.Getter;
 
 @Getter
 public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
-    @Getter
-    private class EmbeddedSource implements Source<Entity> {
-        private final List<Object> parameters;
-        private Entity entity = null;
-
-        private final boolean resolved = true;
-        private boolean saved = false;
-        private boolean deleted = false;
-
-        //
-
-        public EmbeddedSource(List<Object> parameters, Entity entity) {
-            this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
-            this.entity = Objects.requireNonNull(entity);
-        }
-
-        //
-
-        @Override
-        public Entity saveEntity() {
-            if (!deleted) {
-                entity = BaseSourceResolver.this.saveEntity(entity);
-                return entity;
-            } else {
-                throw new IllegalStateException();
-            }
-        }
-
-        @Override
-        public void deleteEntity() {
-            if (!deleted) {
-                BaseSourceResolver.this.deleteEntity(entity);
-                deleted = true;
-            } else {
-                throw new IllegalStateException();
-            }
-        }
-    }
-
-    //
-
     private Class<Entity> entityClass = null;
     private CrudRepository<Entity, ?> crudRepository = null;
 
@@ -91,16 +48,21 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     //
 
     @Override
-    public Source<Entity> resolve(Source<?> source) throws SourceNotSupportedException {
-        if (source.isResolved()) {
-            throw new IllegalStateException();
-        }
-        //
-        Entity entity = loadEntity(source.getParameters());
-        return new EmbeddedSource(source.getParameters(), entity);
+    public Source<Entity> resolve(String name, List<Object> parameters) throws SourceNotSupportedException {
+        Entity entity = loadEntity(name, parameters);
+        return Source.with(name, parameters, entity);
     }
 
-    protected Entity loadEntity(List<Object> parameters) {
+    @Override
+    public void commit(Source<Entity> source) {
+        if (source.isForDelete()) {
+            deleteEntity(source.getEntity());
+        } else if (source.isForUpdate()) {
+            saveEntity(source.getEntity());
+        }
+    }
+
+    protected Entity loadEntity(String name, List<Object> parameters) {
         if (CollectionUtils.isEmpty(parameters)) {
             throw new IllegalStateException();
         }
