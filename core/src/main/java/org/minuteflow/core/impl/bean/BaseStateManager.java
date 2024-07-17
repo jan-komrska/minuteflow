@@ -29,6 +29,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.PredicateUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateAccessor;
 import org.minuteflow.core.api.contract.StateManager;
@@ -123,6 +124,27 @@ public class BaseStateManager implements StateManager {
 
     //
 
+    @SuppressWarnings("unchecked")
+    private <Entity> Source<Entity> asSource(Object entity) {
+        return (entity instanceof Source<?>) ? (Source<Entity>) entity : null;
+    }
+
+    private <Entity> Entity getEntity(Source<Entity> source, Entity entity) {
+        if ((source != null) && source.isResolved()) {
+            return source.getEntity();
+        } else {
+            return entity;
+        }
+    }
+
+    private void markForUpdate(Source<?> source) {
+        if ((source != null) && source.isResolved()) {
+            source.markForUpdate();
+        }
+    }
+
+    //
+
     @Override
     public Set<State> getStates(Object entity) throws BaseException {
         StateAccessor stateAccessor = findStateAccessor(entity);
@@ -144,24 +166,37 @@ public class BaseStateManager implements StateManager {
 
     @Override
     public void addState(Object entity, State... sourceStates) throws BaseException {
+        Source<Object> source = asSource(entity);
+        entity = getEntity(source, entity);
+        //
         StateAccessor stateAccessor = findStateAccessor(entity);
         Set<State> states = getStates(entity, stateAccessor);
         states.addAll(asSet(sourceStates));
         setStates(entity, stateAccessor, states);
+        //
+        markForUpdate(source);
     }
 
     @Override
     public void removeState(Object entity, State... sourceStates) throws BaseException {
+        Source<Object> source = asSource(entity);
+        entity = getEntity(source, entity);
+        //
         StateAccessor stateAccessor = findStateAccessor(entity);
         Set<State> states = getStates(entity, stateAccessor);
         states.removeAll(asSet(sourceStates));
         setStates(entity, stateAccessor, states);
+        //
+        markForUpdate(source);
     }
 
     @Override
     public void updateState(Object entity, State sourceState, State targetState) throws BaseException {
         Objects.requireNonNull(sourceState);
         Objects.requireNonNull(targetState);
+        //
+        Source<Object> source = asSource(entity);
+        entity = getEntity(source, entity);
         //
         StateAccessor stateAccessor = findStateAccessor(entity);
         Set<State> states = getStates(entity, stateAccessor);
@@ -171,12 +206,17 @@ public class BaseStateManager implements StateManager {
         states.remove(sourceState);
         states.add(targetState);
         setStates(entity, stateAccessor, states);
+        //
+        markForUpdate(source);
     }
 
     @Override
     public void updateState(Object entity, State[] sourceStatesAsArray, State[] targetStatesAsArray) throws BaseException {
         Set<State> sourceStates = asSet(sourceStatesAsArray);
         Set<State> targetStates = asSet(targetStatesAsArray);
+        //
+        Source<Object> source = asSource(entity);
+        entity = getEntity(source, entity);
         //
         StateAccessor stateAccessor = findStateAccessor(entity);
         Set<State> states = getStates(entity, stateAccessor);
@@ -186,5 +226,7 @@ public class BaseStateManager implements StateManager {
         states.removeAll(sourceStates);
         states.addAll(targetStates);
         setStates(entity, stateAccessor, states);
+        //
+        markForUpdate(source);
     }
 }

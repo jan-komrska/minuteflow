@@ -25,10 +25,14 @@ import java.util.List;
 import org.apache.commons.collections4.ListUtils;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 class SourceWithParameters<Entity> implements Source<Entity> {
     private final String name;
+
+    @ToString.Include
     private final List<Object> parameters;
 
     //

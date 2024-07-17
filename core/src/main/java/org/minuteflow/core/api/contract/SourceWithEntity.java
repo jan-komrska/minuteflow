@@ -26,11 +26,15 @@ import java.util.Objects;
 import org.apache.commons.collections4.ListUtils;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 class SourceWithEntity<Entity> implements Source<Entity> {
     private final String name;
     private final List<Object> parameters;
+
+    @ToString.Include
     private final Entity entity;
 
     private final boolean resolved = true;
