@@ -49,10 +49,6 @@ class SourceWithEntity<Entity> implements Source<Entity> {
         this.entity = Objects.requireNonNull(entity);
     }
 
-    public SourceWithEntity(Entity entity) {
-        this(null, null, entity);
-    }
-
     //
 
     @Override
