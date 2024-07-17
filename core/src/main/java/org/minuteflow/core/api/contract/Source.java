@@ -65,6 +65,6 @@ public interface Source<Entity> {
     }
 
     public static <Entity> Source<Entity> withEntity(Entity entity) {
-        return new SourceWithEntity<Entity>(entity);
+        return new SourceWithEntity<Entity>(null, null, entity);
     }
 }
