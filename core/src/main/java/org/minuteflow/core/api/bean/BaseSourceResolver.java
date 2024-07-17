@@ -49,20 +49,6 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
 
     @Override
     public Source<Entity> resolve(String name, List<Object> parameters) throws SourceNotSupportedException {
-        Entity entity = loadEntity(name, parameters);
-        return Source.with(name, parameters, entity);
-    }
-
-    @Override
-    public void commit(Source<Entity> source) {
-        if (source.isForDelete()) {
-            deleteEntity(source.getEntity());
-        } else if (source.isForUpdate()) {
-            saveEntity(source.getEntity());
-        }
-    }
-
-    protected Entity loadEntity(String name, List<Object> parameters) {
         if (CollectionUtils.isEmpty(parameters)) {
             throw new IllegalStateException();
         }
@@ -85,17 +71,27 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
         }
         //
         if (entityClass.isInstance(result)) {
-            return entityClass.cast(result);
+            Entity entity = entityClass.cast(result);
+            return Source.with(name, parameters, entity);
         } else {
             throw new IllegalStateException();
         }
     }
 
-    protected Entity saveEntity(Entity entity) {
-        return crudRepository.save(entity);
-    }
-
-    protected void deleteEntity(Entity entity) {
-        crudRepository.delete(entity);
+    @Override
+    public void commit(Source<Entity> source) {
+        boolean isInstance = entityClass.isInstance(source.getEntity());
+        //
+        if (!isInstance) {
+            if (source.isForDelete()) {
+                crudRepository.delete(source.getEntity());
+            } else if (source.isForUpdate()) {
+                crudRepository.save(source.getEntity());
+            } else {
+                // DO NOTHING
+            }
+        } else {
+            throw new IllegalStateException();
+        }
     }
 }
