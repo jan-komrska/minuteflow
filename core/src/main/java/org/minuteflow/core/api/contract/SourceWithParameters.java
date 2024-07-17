@@ -42,10 +42,6 @@ class SourceWithParameters<Entity> implements Source<Entity> {
         this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
     }
 
-    public SourceWithParameters(List<Object> parameters) {
-        this(null, parameters);
-    }
-
     //
 
     @Override
