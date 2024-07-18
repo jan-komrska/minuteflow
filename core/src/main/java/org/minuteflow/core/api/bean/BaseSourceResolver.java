@@ -80,9 +80,10 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
 
     @Override
     public void commit(Source<Entity> source) {
-        boolean isInstance = entityClass.isInstance(source.getEntity());
+        boolean isResolvedInstance = (source != null) && source.isResolved() && //
+                entityClass.isInstance(source.getEntity());
         //
-        if (isInstance) {
+        if (isResolvedInstance) {
             if (source.isForDelete()) {
                 crudRepository.delete(source.getEntity());
             } else if (source.isForUpdate()) {
