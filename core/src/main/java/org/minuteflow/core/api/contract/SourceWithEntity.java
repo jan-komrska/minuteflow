@@ -20,45 +20,44 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections4.ListUtils;
+
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 class SourceWithEntity<Entity> implements Source<Entity> {
-    private final List<Object> parameters = Collections.emptyList();
+    private final String name;
+    private final List<Object> parameters;
+
+    @ToString.Include
     private final Entity entity;
 
     private final boolean resolved = true;
-    private boolean saved = false;
-    private boolean deleted = false;
+    private boolean forUpdate = false;
+    private boolean forDelete = false;
 
     //
 
-    public SourceWithEntity(Entity entity) {
+    public SourceWithEntity(String name, List<Object> parameters, Entity entity) {
+        this.name = name;
+        this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
         this.entity = Objects.requireNonNull(entity);
     }
 
     //
 
     @Override
-    public Entity saveEntity() {
-        if (!deleted) {
-            saved = true;
-            return entity;
-        } else {
-            throw new IllegalStateException();
-        }
+    public void markForUpdate() {
+        forUpdate = true;
     }
 
     @Override
-    public void deleteEntity() {
-        if (!deleted) {
-            deleted = true;
-        } else {
-            throw new IllegalStateException();
-        }
+    public void markForDelete() {
+        forDelete = true;
     }
 }

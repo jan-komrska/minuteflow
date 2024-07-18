@@ -20,10 +20,14 @@ package org.minuteflow.core.api.contract;
  * =========================LICENSE_END==================================
  */
 
+import java.util.List;
+
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
 
 public interface SourceResolver<Entity> {
     public Class<Entity> getEntityClass();
 
-    public Source<Entity> resolve(Source<?> source) throws SourceNotSupportedException;
+    public Source<Entity> resolve(String name, List<Object> parameters) throws SourceNotSupportedException;
+
+    public void commit(Source<Entity> source);
 }

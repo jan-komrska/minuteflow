@@ -131,22 +131,42 @@ public class BaseDispatcher implements Dispatcher {
         return targetStates.descendingSet().stream().map(StateWithPath::getState).toList();
     }
 
+    @SuppressWarnings("unchecked")
+    private <Entity> Source<Entity> asSource(Object entity) {
+        return (entity instanceof Source<?>) ? (Source<Entity>) entity : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <Entity> SourceResolver<Entity> getSourceResolver(Method method, Source<?> source) {
+        if ((source != null) && !source.isResolved()) {
+            EntityClassRef entityClassRef = method.getDeclaringClass().getAnnotation(EntityClassRef.class);
+            //
+            if (entityClassRef != null) {
+                return (SourceResolver<Entity>) sourceResolverRepository.getSourceResolver(entityClassRef.value());
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public Object dispatch(Method method, Object[] args) throws Throwable {
         args = ArrayUtils.nullToEmpty(args);
         args = Arrays.copyOf(args, args.length);
         //
         Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
-        boolean isUnresolvedSource = (entity instanceof Source<?> source) ? !source.isResolved() : false;
-        boolean hasEntityClass = (method.getDeclaringClass().getAnnotationsByType(EntityClassRef.class) != null);
-        if (isUnresolvedSource && hasEntityClass) {
-            Class<?> entityClass = method.getDeclaringClass().getAnnotation(EntityClassRef.class).value();
-            SourceResolver<?> sourceResolver = sourceResolverRepository.getSourceResolver(entityClass);
-            entity = sourceResolver.resolve((Source<?>) entity);
+        Source<Object> source = asSource(entity);
+        SourceResolver<Object> sourceResolver = getSourceResolver(method, source);
+        //
+        if (sourceResolver != null) {
+            // TODO ... name
+            entity = source = sourceResolver.resolve(null, source.getParameters());
             methodDescriptor.setEntity(method, args, entity);
         }
         //
-        if (entity instanceof Source<?> source) {
+        if (source != null) {
             entity = (source.isResolved()) ? source.getEntity() : null;
             entity = Objects.requireNonNull(entity);
         }
@@ -156,7 +176,13 @@ public class BaseDispatcher implements Dispatcher {
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
-                return controller.executeAction(actionName, args);
+                Object result = controller.executeAction(actionName, args);
+                //
+                if (sourceResolver != null) {
+                    sourceResolver.commit(source);
+                }
+                //
+                return result;
             }
         }
         //

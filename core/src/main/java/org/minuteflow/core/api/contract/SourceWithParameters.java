@@ -25,14 +25,20 @@ import java.util.List;
 import org.apache.commons.collections4.ListUtils;
 
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 class SourceWithParameters<Entity> implements Source<Entity> {
-    private List<Object> parameters = null;
+    private final String name;
+
+    @ToString.Include
+    private final List<Object> parameters;
 
     //
 
-    public SourceWithParameters(List<Object> parameters) {
+    public SourceWithParameters(String name, List<Object> parameters) {
+        this.name = name;
         this.parameters = ListUtils.emptyIfNull(parameters).stream().toList();
     }
 
@@ -44,12 +50,12 @@ class SourceWithParameters<Entity> implements Source<Entity> {
     }
 
     @Override
-    public boolean isSaved() {
+    public boolean isForUpdate() {
         return false;
     }
 
     @Override
-    public boolean isDeleted() {
+    public boolean isForDelete() {
         return false;
     }
 
@@ -59,12 +65,12 @@ class SourceWithParameters<Entity> implements Source<Entity> {
     }
 
     @Override
-    public Entity saveEntity() {
+    public void markForUpdate() {
         throw new IllegalStateException();
     }
 
     @Override
-    public void deleteEntity() {
+    public void markForDelete() {
         throw new IllegalStateException();
     }
 }

@@ -81,15 +81,13 @@ public class OrderFlowConfiguration {
         return new OrderManager() {
             @Override
             @ActionRef
-            public void startOrder(Source<OrderEntity> orderSource) {
-                OrderEntity order = orderSource.getEntity();
+            public void startOrder(Source<OrderEntity> order) {
                 log.info("startOrder: " + order);
                 stateManager.updateState(order, //
                         new State[] { orderStateOpen() }, //
                         new State[] { orderStatePaymentRequested(), orderStatePackagingRequested() } //
                 );
                 log.info("  - updated: " + order);
-                orderSource.saveEntity();
             }
         };
     }
@@ -106,14 +104,12 @@ public class OrderFlowConfiguration {
 
             @Override
             @ActionRef
-            public void orderPaymentDone(Source<OrderEntity> orderSource) {
-                OrderEntity order = orderSource.getEntity();
+            public void orderPaymentDone(Source<OrderEntity> order) {
                 log.info("orderPaymentDone: " + order);
                 stateManager.updateState(order, orderStatePaymentRequested(), orderStatePaymentDone());
                 log.info("  - updated: " + order);
                 //
-                orderManager.finishOrder(orderSource);
-                orderSource.saveEntity();
+                orderManager.finishOrder(order);
             }
         };
     }
@@ -130,14 +126,12 @@ public class OrderFlowConfiguration {
 
             @Override
             @ActionRef
-            public void orderPackagingDone(Source<OrderEntity> orderSource) {
-                OrderEntity order = orderSource.getEntity();
+            public void orderPackagingDone(Source<OrderEntity> order) {
                 log.info("orderPackagingDone: " + order);
                 stateManager.updateState(order, orderStatePackagingRequested(), orderStatePackagingDone());
                 log.info("  - updated: " + order);
                 //
-                orderManager.finishOrder(orderSource);
-                orderSource.saveEntity();
+                orderManager.finishOrder(order);
             }
         };
     }
@@ -148,15 +142,13 @@ public class OrderFlowConfiguration {
         return new OrderManager() {
             @Override
             @ActionRef
-            public void finishOrder(Source<OrderEntity> orderSource) {
-                OrderEntity order = orderSource.getEntity();
+            public void finishOrder(Source<OrderEntity> order) {
                 log.info("finishOrder: " + order);
                 stateManager.updateState(order, //
                         new State[] { orderStatePaymentDone(), orderStatePackagingDone() }, //
                         new State[] { orderStateDone() } //
                 );
                 log.info("  - updated: " + order);
-                orderSource.saveEntity();
             }
         };
     }
@@ -167,11 +159,8 @@ public class OrderFlowConfiguration {
         return new OrderManager() {
             @Override
             @ActionRef
-            public void finishOrder(Source<OrderEntity> orderSource) {
-                OrderEntity order = orderSource.getEntity();
-                log.info("(ignore) finishOrder: " + order);
-                log.info("  - (not) updated: " + order);
-                orderSource.saveEntity();
+            public void finishOrder(Source<OrderEntity> order) {
+                // DO NOTHING
             }
         };
     }
