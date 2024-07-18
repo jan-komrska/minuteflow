@@ -138,10 +138,14 @@ public class BaseDispatcher implements Dispatcher {
 
     @SuppressWarnings("unchecked")
     private <Entity> SourceResolver<Entity> getSourceResolver(Method method, Source<?> source) {
-        if ((source != null) && (!source.isResolved())) {
-            boolean hasEntityClass = (method.getDeclaringClass().getAnnotationsByType(EntityClassRef.class) != null);
-            Class<?> entityClass = (hasEntityClass) ? method.getDeclaringClass().getAnnotation(EntityClassRef.class).value() : null;
-            return (hasEntityClass) ? (SourceResolver<Entity>) sourceResolverRepository.getSourceResolver(entityClass) : null;
+        if ((source != null) && !source.isResolved()) {
+            EntityClassRef entityClassRef = method.getDeclaringClass().getAnnotation(EntityClassRef.class);
+            //
+            if (entityClassRef != null) {
+                return (SourceResolver<Entity>) sourceResolverRepository.getSourceResolver(entityClassRef.value());
+            } else {
+                return null;
+            }
         } else {
             return null;
         }

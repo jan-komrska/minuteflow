@@ -153,8 +153,13 @@ public class BaseStateManager implements StateManager {
 
     @Override
     public void setStates(Object entity, Set<State> states) throws BaseException {
+        Source<Object> source = asSource(entity);
+        entity = getEntity(source, entity);
+        //
         StateAccessor stateAccessor = findStateAccessor(entity);
         setStates(entity, stateAccessor, states);
+        //
+        markForUpdate(source);
     }
 
     @Override
