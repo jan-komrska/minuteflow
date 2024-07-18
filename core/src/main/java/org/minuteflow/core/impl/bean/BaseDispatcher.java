@@ -161,8 +161,8 @@ public class BaseDispatcher implements Dispatcher {
         SourceResolver<Object> sourceResolver = getSourceResolver(method, source);
         //
         if (sourceResolver != null) {
-            // TODO ... name
-            entity = source = sourceResolver.resolve(null, source.getParameters());
+            String entityName = methodDescriptor.getEntityName(method);
+            entity = source = sourceResolver.resolve(entityName, source.getParameters());
             methodDescriptor.setEntity(method, args, entity);
         }
         //

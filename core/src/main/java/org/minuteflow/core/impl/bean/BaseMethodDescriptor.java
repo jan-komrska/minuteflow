@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.annotation.EntityRef;
+import org.minuteflow.core.api.annotation.NamedRef;
 import org.minuteflow.core.api.contract.MethodDescriptor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -54,6 +55,7 @@ public class BaseMethodDescriptor implements MethodDescriptor {
     private static class EntityAccessor {
         private Method method = null;
         private int entityIndex = -1;
+        private String entityName = null;
 
         public EntityAccessor(Method method) {
             this.method = method;
@@ -62,8 +64,11 @@ public class BaseMethodDescriptor implements MethodDescriptor {
             Parameter[] parameters = ArrayUtils.nullToEmpty(method.getParameters(), Parameter[].class);
             for (int index = 0; index < parameters.length; index++) {
                 Parameter parameter = parameters[index];
-                if (parameter.getAnnotation(EntityRef.class) != null) {
+                EntityRef entityRef = parameter.getAnnotation(EntityRef.class);
+                NamedRef namedRef = parameter.getAnnotation(NamedRef.class);
+                if (entityRef != null) {
                     entityIndex = index;
+                    entityName = (namedRef != null) ? namedRef.value() : null;
                 }
             }
         }
@@ -112,6 +117,15 @@ public class BaseMethodDescriptor implements MethodDescriptor {
             log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
         }
         return entityAccessorMap.get(method).getEntity(args);
+    }
+
+    public String getEntityName(Method method) {
+        if (!entityAccessorMap.containsKey(method)) {
+            EntityAccessor entityAccessor = new EntityAccessor(method);
+            entityAccessorMap.putIfAbsent(method, entityAccessor);
+            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
+        }
+        return entityAccessorMap.get(method).getEntityName();
     }
 
     public void setEntity(Method method, Object[] args, Object entity) {
