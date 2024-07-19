@@ -22,6 +22,7 @@ package org.minuteflow.core.api.bean;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.collections4.ListUtils;
@@ -52,13 +53,8 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
 
     @Override
     public Source<Entity> resolve(String name, List<Object> parameters) throws SourceNotSupportedException {
-        // TODO
-        if (StringUtils.isEmpty(name)) {
-            name = defaultMethodName;
-        }
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalStateException();
-        }
+        name = StringUtils.defaultIfEmpty(name, defaultMethodName);
+        name = Objects.requireNonNull(name);
         //
         Object result;
         try {
