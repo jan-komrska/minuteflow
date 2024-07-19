@@ -38,18 +38,24 @@ import lombok.Getter;
 public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
     private Class<Entity> entityClass = null;
     private CrudRepository<Entity, ?> crudRepository = null;
+    private String defaultMethodName = null;
 
     //
 
-    public BaseSourceResolver(Class<Entity> entityClass, CrudRepository<Entity, ?> crudRepository) {
+    public BaseSourceResolver(Class<Entity> entityClass, CrudRepository<Entity, ?> crudRepository, String defaultMethodName) {
         this.entityClass = entityClass;
         this.crudRepository = crudRepository;
+        this.defaultMethodName = StringUtils.defaultIfEmpty(defaultMethodName, null);
     }
 
     //
 
     @Override
     public Source<Entity> resolve(String name, List<Object> parameters) throws SourceNotSupportedException {
+        // TODO
+        if (StringUtils.isEmpty(name)) {
+            name = defaultMethodName;
+        }
         if (StringUtils.isEmpty(name)) {
             throw new IllegalStateException();
         }

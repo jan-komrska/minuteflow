@@ -21,23 +21,22 @@ package org.minuteflow.tstapp.multi;
  */
 
 import org.minuteflow.core.api.annotation.EntityRef;
-import org.minuteflow.core.api.annotation.NamedRef;
 import org.minuteflow.core.api.contract.Source;
 
 public interface OrderManager {
-    public default void startOrder(@EntityRef @NamedRef("findById") Source<OrderEntity> order) {
+    public default void startOrder(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 
-    public default void finishOrder(@EntityRef @NamedRef("findById") Source<OrderEntity> order) {
+    public default void finishOrder(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 
-    public default void orderPaymentDone(@EntityRef @NamedRef("findById") Source<OrderEntity> order) {
+    public default void orderPaymentDone(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 
-    public default void orderPackagingDone(@EntityRef @NamedRef("findById") Source<OrderEntity> order) {
+    public default void orderPackagingDone(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
 }
