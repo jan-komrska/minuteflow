@@ -29,5 +29,7 @@ public interface MethodDescriptor {
 
     public String getEntityName(Method method);
 
+    public Class<?> getEntityClass(Method method);
+
     public void setEntity(Method method, Object[] args, Object entity);
 }

@@ -31,7 +31,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.minuteflow.core.api.annotation.EntityClassRef;
 import org.minuteflow.core.api.contract.Controller;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.MethodDescriptor;
@@ -139,10 +138,10 @@ public class BaseDispatcher implements Dispatcher {
     @SuppressWarnings("unchecked")
     private <Entity> SourceResolver<Entity> getSourceResolver(Method method, Source<?> source) {
         if ((source != null) && !source.isResolved()) {
-            EntityClassRef entityClassRef = method.getDeclaringClass().getAnnotation(EntityClassRef.class);
+            Class<?> entityClass = methodDescriptor.getEntityClass(method);
             //
-            if (entityClassRef != null) {
-                return (SourceResolver<Entity>) sourceResolverRepository.getSourceResolver(entityClassRef.value());
+            if (entityClass != null) {
+                return (SourceResolver<Entity>) sourceResolverRepository.getSourceResolver(entityClass);
             } else {
                 return null;
             }

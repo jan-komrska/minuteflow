@@ -22,13 +22,17 @@ package org.minuteflow.core.impl.bean;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.minuteflow.core.api.annotation.EntityRef;
 import org.minuteflow.core.api.annotation.NamedRef;
 import org.minuteflow.core.api.contract.MethodDescriptor;
+import org.minuteflow.core.api.contract.Source;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -56,6 +60,7 @@ public class BaseMethodDescriptor implements MethodDescriptor {
         private Method method = null;
         private int entityIndex = -1;
         private String entityName = null;
+        private Class<?> entityClass = null;
 
         public EntityAccessor(Method method) {
             this.method = method;
@@ -69,8 +74,22 @@ public class BaseMethodDescriptor implements MethodDescriptor {
                 if (entityRef != null) {
                     entityIndex = index;
                     entityName = (namedRef != null) ? namedRef.value() : null;
+                    entityClass = entityRef.value();
+                    //
+                    if (TypeUtils.isAssignable(entityClass, Void.class)) {
+                        Type entityType = parameter.getParameterizedType();
+                        if (TypeUtils.isAssignable(entityType, Source.class)) {
+                            entityType = getType(entityType, Source.class.getTypeParameters()[0]);
+                        }
+                        //
+                        entityClass = (entityType instanceof Class<?> value) ? value : null;
+                    }
                 }
             }
+        }
+
+        private Type getType(Type type, TypeVariable<? extends Class<?>> variable) {
+            return TypeUtils.getTypeArguments(type, variable.getGenericDeclaration()).get(variable);
         }
 
         public Object getEntity(Object[] args) {
@@ -126,6 +145,15 @@ public class BaseMethodDescriptor implements MethodDescriptor {
             log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
         }
         return entityAccessorMap.get(method).getEntityName();
+    }
+
+    public Class<?> getEntityClass(Method method) {
+        if (!entityAccessorMap.containsKey(method)) {
+            EntityAccessor entityAccessor = new EntityAccessor(method);
+            entityAccessorMap.putIfAbsent(method, entityAccessor);
+            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
+        }
+        return entityAccessorMap.get(method).getEntityClass();
     }
 
     public void setEntity(Method method, Object[] args, Object entity) {
