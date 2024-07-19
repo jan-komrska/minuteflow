@@ -23,5 +23,5 @@ package org.minuteflow.core.api.contract;
 import java.lang.reflect.Method;
 
 public interface Dispatcher {
-    public Object dispatch(Method method, Object[] args) throws Throwable;
+    public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable;
 }

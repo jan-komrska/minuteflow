@@ -29,6 +29,8 @@ public interface StateManager extends StateCollection {
 
     public void setStates(Object entity, Set<State> states) throws BaseException;
 
+    public void setStates(Object entity, State... states) throws BaseException;
+
     public boolean containsState(Object entity, State... states) throws BaseException;
 
     public void addState(Object entity, State... states) throws BaseException;

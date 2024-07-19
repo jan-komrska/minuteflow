@@ -24,7 +24,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import org.minuteflow.core.api.contract.DispatchContext;
 import org.minuteflow.core.api.contract.Dispatcher;
+import org.minuteflow.core.api.contract.State;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
 import lombok.AccessLevel;
@@ -41,6 +43,8 @@ public class DispatchProxyFactory<Contract> extends AbstractFactoryBean<Contract
 
     @ToString.Exclude
     private Dispatcher dispatcher = null;
+
+    private State staticState = null;
 
     //
 
@@ -62,7 +66,10 @@ public class DispatchProxyFactory<Contract> extends AbstractFactoryBean<Contract
                 new InvocationHandler() {
                     @Override
                     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                        return dispatcher.dispatch(method, args);
+                        DispatchContext dispatchContext = new DispatchContext();
+                        dispatchContext.setStaticState(staticState);
+                        //
+                        return dispatcher.dispatch(method, args, dispatchContext);
                     }
                 }));
     }

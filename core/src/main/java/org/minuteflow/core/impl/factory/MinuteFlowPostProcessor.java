@@ -104,7 +104,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerName;
     }
 
-    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, Class<?> serviceClass) {
+    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, Class<?> serviceClass, String staticState) {
         String minuteServiceName = nextBeanName(parentBeanName, "minute-service");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(DispatchProxyFactory.class);
@@ -113,6 +113,10 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.setLazyInit(false);
         beanDefinitionBuilder.addConstructorArgValue(serviceClass);
         beanDefinitionBuilder.addPropertyValue("dispatcher", new RuntimeBeanReference(Dispatcher.class));
+        //
+        if (StringUtils.isNotEmpty(staticState)) {
+            beanDefinitionBuilder.addPropertyReference("staticState", staticState);
+        }
         //
         registry.registerBeanDefinition(minuteServiceName, beanDefinitionBuilder.getBeanDefinition());
         //
@@ -206,7 +210,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                             getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
                     for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
                         Class<?> serviceClass = minuteServiceRef.getClass("value");
-                        registerMinuteService(registry, beanName, serviceClass);
+                        String staticState = minuteServiceRef.getString("staticState");
+                        registerMinuteService(registry, beanName, serviceClass, staticState);
                     }
                     //
                     List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //

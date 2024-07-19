@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 public interface MethodDescriptor {
     public String getActionName(Method method);
 
+    public boolean isStaticAction(Method method);
+
     public Object getEntity(Method method, Object[] args);
 
     public String getEntityName(Method method);

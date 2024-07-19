@@ -24,6 +24,10 @@ import org.minuteflow.core.api.annotation.EntityRef;
 import org.minuteflow.core.api.contract.Source;
 
 public interface OrderManager {
+    public default Long createOrder(String name) {
+        throw new UnsupportedOperationException();
+    }
+
     public default void startOrder(@EntityRef Source<OrderEntity> order) {
         throw new UnsupportedOperationException();
     }
