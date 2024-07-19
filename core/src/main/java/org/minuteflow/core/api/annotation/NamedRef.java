@@ -26,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
-public @interface EntityClassRef {
-    public Class<?> value();
+@Target({ ElementType.PARAMETER })
+public @interface NamedRef {
+    public String value();
 }

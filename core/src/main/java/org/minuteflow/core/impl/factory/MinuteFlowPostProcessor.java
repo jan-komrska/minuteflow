@@ -137,7 +137,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return minuteEntityName;
     }
 
-    private String registerMinuteSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, Class<?> entityClass, Class<?> repositoryClass) {
+    private String registerMinuteSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, Class<?> entityClass, Class<?> repositoryClass, String defaultFindMethodName) {
         String minuteSourceResolverName = nextBeanName(parentBeanName, "minute-source-resolver");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseSourceResolver.class);
@@ -145,6 +145,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.setLazyInit(false);
         beanDefinitionBuilder.addConstructorArgValue(entityClass);
         beanDefinitionBuilder.addConstructorArgValue(new RuntimeBeanReference(repositoryClass));
+        beanDefinitionBuilder.addConstructorArgValue(defaultFindMethodName);
         //
         registry.registerBeanDefinition(minuteSourceResolverName, beanDefinitionBuilder.getBeanDefinition());
         //
@@ -214,9 +215,11 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                         Class<?> entityClass = minuteEntityRef.getClass("entityClass");
                         String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
                         Class<?> repositoryClass = minuteEntityRef.getClass("repositoryClass");
+                        String defaultFindMethodName = minuteEntityRef.getString("defaultFindMethodName");
+                        //
                         registerMinuteEntity(registry, beanName, entityClass, statePatterns);
                         if (ClassUtils.isAssignable(repositoryClass, CrudRepository.class)) {
-                            registerMinuteSourceResolver(registry, beanName, entityClass, repositoryClass);
+                            registerMinuteSourceResolver(registry, beanName, entityClass, repositoryClass, defaultFindMethodName);
                         }
                     }
                 }

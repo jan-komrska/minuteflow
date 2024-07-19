@@ -79,9 +79,9 @@ public class Application {
         //
         orderEntityRepository.save(orderEntity);
         //
-        orderManager.startOrder(Source.withParameters("findById", orderEntity.getId()));
-        orderManager.orderPaymentDone(Source.withParameters("findById", orderEntity.getId()));
-        orderManager.orderPackagingDone(Source.withParameters("findById", orderEntity.getId()));
+        orderManager.startOrder(Source.withParameters(orderEntity.getId()));
+        orderManager.orderPaymentDone(Source.withParameters(orderEntity.getId()));
+        orderManager.orderPackagingDone(Source.withParameters(orderEntity.getId()));
     }
 
     //
