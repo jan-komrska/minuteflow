@@ -20,13 +20,7 @@ package org.minuteflow.tstapp;
  * =========================LICENSE_END==================================
  */
 
-import java.util.Set;
-
 import org.minuteflow.core.api.contract.Source;
-import org.minuteflow.core.api.contract.State;
-import org.minuteflow.core.api.contract.StateManager;
-import org.minuteflow.tstapp.multi.OrderEntity;
-import org.minuteflow.tstapp.multi.OrderEntityRepository;
 import org.minuteflow.tstapp.multi.OrderManager;
 import org.minuteflow.tstapp.oop.AnimalEntity;
 import org.minuteflow.tstapp.oop.AnimalEntityType;
@@ -35,7 +29,6 @@ import org.minuteflow.tstapp.simple.TaskEntity;
 import org.minuteflow.tstapp.simple.TaskEntityState;
 import org.minuteflow.tstapp.simple.TaskManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -59,29 +52,13 @@ public class Application {
     //
 
     @Autowired
-    private OrderEntityRepository orderEntityRepository;
-
-    @Autowired
     private OrderManager orderManager;
 
-    @Autowired
-    private StateManager stateManager;
-
-    @Autowired
-    @Qualifier("orderStateOpen")
-    private State orderStateOpen;
-
     public void orderManagerExample() {
-        OrderEntity orderEntity = new OrderEntity();
-        orderEntity.setId(2L);
-        orderEntity.setName("Order lunch");
-        stateManager.setStates(orderEntity, Set.of(orderStateOpen));
-        //
-        orderEntityRepository.save(orderEntity);
-        //
-        orderManager.startOrder(Source.withParameters(orderEntity.getId()));
-        orderManager.orderPaymentDone(Source.withParameters(orderEntity.getId()));
-        orderManager.orderPackagingDone(Source.withParameters(orderEntity.getId()));
+        Long id = orderManager.createOrder("Order lunch");
+        orderManager.startOrder(Source.withParameters(id));
+        orderManager.orderPaymentDone(Source.withParameters(id));
+        orderManager.orderPackagingDone(Source.withParameters(id));
     }
 
     //

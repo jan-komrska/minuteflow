@@ -27,6 +27,7 @@ import org.minuteflow.core.api.annotation.ControllerRefType;
 import org.minuteflow.core.api.annotation.MinuteEntityRef;
 import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
+import org.minuteflow.core.api.bean.BaseState;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.State;
 import org.minuteflow.core.api.contract.StateManager;
@@ -40,9 +41,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @Import(MinuteFlowConfiguration.class)
-@MinuteServiceRef(OrderManager.class)
-@MinuteEntityRef(entityClass = OrderEntity.class, statePattern = { "orderState*", "orderManager*" }, repositoryClass = OrderEntityRepository.class, defaultFindMethodName = "findById")
+@MinuteServiceRef(value = OrderManager.class, staticState = "orderStateConstructor")
+@MinuteEntityRef(entityClass = OrderEntity.class, statePattern = { "orderState*", "orderManager*" }, //
+        repositoryClass = OrderEntityRepository.class, defaultFindMethodName = "findById")
 public class OrderFlowConfiguration {
+    @Bean
+    public State orderStateConstructor() {
+        return new BaseState();
+    }
+
     @Bean
     public State orderStateOpen() {
         return new BasePropertyState().withStateNameProperty("states");
@@ -74,6 +81,24 @@ public class OrderFlowConfiguration {
     }
 
     //
+
+    @ControllerRef("orderStateConstructor")
+    @Bean
+    public OrderManager orderManagerStateConstructor( //
+            @Autowired OrderEntityRepository orderEntityRepository, @Autowired StateManager stateManager) {
+        return new OrderManager() {
+            @Override
+            @ActionRef
+            public Long createOrder(String name) {
+                OrderEntity orderEntity = new OrderEntity();
+                orderEntity.setName(name);
+                stateManager.setStates(orderEntity, orderStateOpen());
+                //
+                orderEntity = orderEntityRepository.save(orderEntity);
+                return orderEntity.getId();
+            }
+        };
+    }
 
     @ControllerRef("orderStateOpen")
     @Bean

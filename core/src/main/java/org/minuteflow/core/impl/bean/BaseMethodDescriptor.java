@@ -59,30 +59,33 @@ public class BaseMethodDescriptor implements MethodDescriptor {
     private static class EntityAccessor {
         private Method method = null;
         private int entityIndex = -1;
+        private boolean staticAction = true;
         private String entityName = null;
         private Class<?> entityClass = null;
 
         public EntityAccessor(Method method) {
             this.method = method;
             this.entityIndex = -1;
+            this.staticAction = true;
             //
-            Parameter[] parameters = ArrayUtils.nullToEmpty(method.getParameters(), Parameter[].class);
+            Parameter[] parameters = ArrayUtils.nullToEmpty(this.method.getParameters(), Parameter[].class);
             for (int index = 0; index < parameters.length; index++) {
                 Parameter parameter = parameters[index];
                 EntityRef entityRef = parameter.getAnnotation(EntityRef.class);
                 NamedRef namedRef = parameter.getAnnotation(NamedRef.class);
                 if (entityRef != null) {
-                    entityIndex = index;
-                    entityName = (namedRef != null) ? namedRef.value() : null;
-                    entityClass = entityRef.value();
+                    this.entityIndex = index;
+                    this.staticAction = false;
+                    this.entityName = (namedRef != null) ? namedRef.value() : null;
+                    this.entityClass = entityRef.value();
                     //
-                    if (TypeUtils.isAssignable(entityClass, Void.class)) {
+                    if (TypeUtils.isAssignable(this.entityClass, Void.class)) {
                         Type entityType = parameter.getParameterizedType();
                         if (TypeUtils.isAssignable(entityType, Source.class)) {
                             entityType = getType(entityType, Source.class.getTypeParameters()[0]);
                         }
                         //
-                        entityClass = (entityType instanceof Class<?> value) ? value : null;
+                        this.entityClass = (entityType instanceof Class<?> value) ? value : null;
                     }
                 }
             }
@@ -127,6 +130,15 @@ public class BaseMethodDescriptor implements MethodDescriptor {
             log.debug("registered actionNameAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
         }
         return actionNameAccessorMap.get(method).getActionName();
+    }
+
+    public boolean isStaticAction(Method method) {
+        if (!entityAccessorMap.containsKey(method)) {
+            EntityAccessor entityAccessor = new EntityAccessor(method);
+            entityAccessorMap.putIfAbsent(method, entityAccessor);
+            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
+        }
+        return entityAccessorMap.get(method).isStaticAction();
     }
 
     public Object getEntity(Method method, Object[] args) {

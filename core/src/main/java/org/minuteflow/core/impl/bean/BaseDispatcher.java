@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.minuteflow.core.api.contract.Controller;
+import org.minuteflow.core.api.contract.DispatchContext;
 import org.minuteflow.core.api.contract.Dispatcher;
 import org.minuteflow.core.api.contract.MethodDescriptor;
 import org.minuteflow.core.api.contract.Source;
@@ -151,10 +152,21 @@ public class BaseDispatcher implements Dispatcher {
     }
 
     @Override
-    public Object dispatch(Method method, Object[] args) throws Throwable {
+    public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable {
         args = ArrayUtils.nullToEmpty(args);
         args = Arrays.copyOf(args, args.length);
-        //
+        // static action
+        if (methodDescriptor.isStaticAction(method)) {
+            String actionName = methodDescriptor.getActionName(method);
+            State state = Objects.requireNonNull(dispatchContext.getStaticState());
+            Controller controller = controllerRepository.getController(state.getName(), actionName);
+            if (controller != null) {
+                return controller.executeAction(actionName, args);
+            } else {
+                throw new ControllerNotFoundException();
+            }
+        }
+        // standard action
         Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
         Source<Object> source = asSource(entity);
         SourceResolver<Object> sourceResolver = getSourceResolver(method, source);

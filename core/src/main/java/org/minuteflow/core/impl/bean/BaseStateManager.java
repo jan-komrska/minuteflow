@@ -163,6 +163,12 @@ public class BaseStateManager implements StateManager {
     }
 
     @Override
+    public void setStates(Object entity, State... states) throws BaseException {
+        states = ArrayUtils.nullToEmpty(states, State[].class);
+        setStates(entity, Set.of(states));
+    }
+
+    @Override
     public boolean containsState(Object entity, State... sourceStates) throws BaseException {
         StateAccessor stateAccessor = findStateAccessor(entity);
         Set<State> states = getStates(entity, stateAccessor);

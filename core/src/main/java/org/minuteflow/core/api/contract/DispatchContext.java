@@ -1,4 +1,4 @@
-package org.minuteflow.core.api.annotation;
+package org.minuteflow.core.api.contract;
 
 /*-
  * ========================LICENSE_START=================================
@@ -20,17 +20,15 @@ package org.minuteflow.core.api.annotation;
  * =========================LICENSE_END==================================
  */
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-@Repeatable(MinuteServiceRefs.class)
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE })
-public @interface MinuteServiceRef {
-    public Class<?> value();
-
-    public String staticState() default "";
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+public class DispatchContext {
+    private State staticState;
 }
