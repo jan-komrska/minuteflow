@@ -145,7 +145,6 @@ public class BaseDispatcher implements Dispatcher {
     @Override
     public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable {
         String actionName = methodDescriptor.getActionName(method);
-        //
         args = ArrayUtils.nullToEmpty(args);
         args = Arrays.copyOf(args, args.length);
         // static action
