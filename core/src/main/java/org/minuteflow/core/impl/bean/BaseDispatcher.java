@@ -144,11 +144,12 @@ public class BaseDispatcher implements Dispatcher {
 
     @Override
     public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable {
+        String actionName = methodDescriptor.getActionName(method);
+        //
         args = ArrayUtils.nullToEmpty(args);
         args = Arrays.copyOf(args, args.length);
         // static action
         if (methodDescriptor.isStaticAction(method)) {
-            String actionName = methodDescriptor.getActionName(method);
             State state = Objects.requireNonNull(dispatchContext.getStaticState());
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
@@ -174,7 +175,6 @@ public class BaseDispatcher implements Dispatcher {
             entity = Objects.requireNonNull(entity);
         }
         //
-        String actionName = methodDescriptor.getActionName(method);
         List<State> states = envelopeAndSortStates(stateManager.getStates(entity));
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);
