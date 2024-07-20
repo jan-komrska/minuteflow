@@ -179,13 +179,13 @@ public class BaseDispatcher implements Dispatcher {
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
-                Object result = controller.executeAction(actionName, args);
-                //
-                if (sourceResolver != null) {
-                    sourceResolver.commit(source);
+                try {
+                    return controller.executeAction(actionName, args);
+                } finally {
+                    if (sourceResolver != null) {
+                        sourceResolver.commit(source);
+                    }
                 }
-                //
-                return result;
             }
         }
         //
