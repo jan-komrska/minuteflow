@@ -137,9 +137,8 @@ public class BaseDispatcher implements Dispatcher {
     }
 
     @SuppressWarnings("unchecked")
-    private <Entity> SourceResolver<Entity> getSourceResolver(Method method, Source<?> source) {
-        Class<Entity> entityClass = ((source != null) && !source.isResolved()) ? //
-                (Class<Entity>) methodDescriptor.getEntityClass(method) : null;
+    private <Entity> SourceResolver<Entity> getSourceResolver(Method method) {
+        Class<Entity> entityClass = (Class<Entity>) methodDescriptor.getEntityClass(method);
         return (entityClass != null) ? sourceResolverRepository.getSourceResolver(entityClass) : null;
     }
 
@@ -161,7 +160,8 @@ public class BaseDispatcher implements Dispatcher {
         // standard action
         Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
         Source<Object> source = asSource(entity);
-        SourceResolver<Object> sourceResolver = getSourceResolver(method, source);
+        SourceResolver<Object> sourceResolver = //
+                ((source != null) && !source.isResolved()) ? getSourceResolver(method) : null;
         //
         if (sourceResolver != null) {
             String sourceName = methodDescriptor.getEntityName(method);
