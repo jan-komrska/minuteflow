@@ -138,17 +138,9 @@ public class BaseDispatcher implements Dispatcher {
 
     @SuppressWarnings("unchecked")
     private <Entity> SourceResolver<Entity> getSourceResolver(Method method, Source<?> source) {
-        if ((source != null) && !source.isResolved()) {
-            Class<?> entityClass = methodDescriptor.getEntityClass(method);
-            //
-            if (entityClass != null) {
-                return (SourceResolver<Entity>) sourceResolverRepository.getSourceResolver(entityClass);
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
+        Class<Entity> entityClass = ((source != null) && !source.isResolved()) ? //
+                (Class<Entity>) methodDescriptor.getEntityClass(method) : null;
+        return (entityClass != null) ? sourceResolverRepository.getSourceResolver(entityClass) : null;
     }
 
     @Override

@@ -65,11 +65,12 @@ public class SourceResolverRepository {
 
     //
 
-    public SourceResolver<?> getSourceResolver(Class<?> entityClass) {
+    @SuppressWarnings("unchecked")
+    public <Entity> SourceResolver<Entity> getSourceResolver(Class<Entity> entityClass) {
         SourceResolverId sourceResolverId = new SourceResolverId(entityClass);
         if (sourceResolverMap.containsKey(sourceResolverId)) {
             String beanName = sourceResolverMap.get(sourceResolverId);
-            return applicationContext.getBean(beanName, SourceResolver.class);
+            return (SourceResolver<Entity>) applicationContext.getBean(beanName, SourceResolver.class);
         } else {
             return null;
         }
