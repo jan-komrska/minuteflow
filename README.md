@@ -19,10 +19,12 @@ or three examples in *test-application* module in the repository.
 
 ## Tutorial
 
-Please check following examples:
-1. [object-oriented features](https://github.com/jan-komrska/minuteflow/wiki/OOP-Example)
-2. [simple flow with enum state](https://github.com/jan-komrska/minuteflow/wiki/Simple-Example)
-3. [flow with parallel states](https://github.com/jan-komrska/minuteflow/wiki/Parallel-States-Example)
+Please check following basic examples:
+- [simple OOP example](https://github.com/jan-komrska/minuteflow/wiki/OOP-Example)
+- [simple workflow example](https://github.com/jan-komrska/minuteflow/wiki/Workflow-Example)
+
+Please check following advanced examples:
+- [domain entity with lifecycle workflow](https://github.com/jan-komrska/minuteflow/wiki/Domain-Entity-Example)
 
 ## Installation
 
@@ -33,6 +35,6 @@ For the latest version please use following dependency:
 <dependency>
   <groupId>org.minuteflow</groupId>
   <artifactId>minuteflow-core</artifactId>
-  <version>0.4.0</version>
+  <version>0.4.1</version>
 </dependency>
 ```
