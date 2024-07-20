@@ -41,9 +41,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @Import(MinuteFlowConfiguration.class)
-@MinuteServiceRef(value = OrderManager.class, staticState = "orderStateConstructor")
+@MinuteServiceRef(serviceClass = OrderManager.class, staticState = "orderStateConstructor")
 @MinuteEntityRef(entityClass = OrderEntity.class, statePattern = { "orderState*", "orderManager*" }, //
-        repositoryClass = OrderEntityRepository.class, defaultFindMethodName = "findById")
+        repositoryClass = OrderEntityRepository.class, defaultFindMethod = "findById")
 public class OrderFlowConfiguration {
     @Bean
     public State orderStateConstructor() {

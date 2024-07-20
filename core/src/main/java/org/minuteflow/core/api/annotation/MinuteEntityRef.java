@@ -36,5 +36,5 @@ public @interface MinuteEntityRef {
 
     public Class<?> repositoryClass() default Void.class;
 
-    public String defaultFindMethodName() default "";
+    public String defaultFindMethod() default "";
 }

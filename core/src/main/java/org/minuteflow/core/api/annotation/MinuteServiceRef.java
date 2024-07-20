@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
 public @interface MinuteServiceRef {
-    public Class<?> value();
+    public Class<?> serviceClass();
 
     public String staticState() default "";
 }

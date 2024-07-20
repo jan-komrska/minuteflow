@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @Import(MinuteFlowConfiguration.class)
-@MinuteServiceRef(AnimalManager.class)
+@MinuteServiceRef(serviceClass = AnimalManager.class)
 @MinuteEntityRef(entityClass = AnimalEntity.class, statePattern = "animalState*")
 public class AnimalConfiguration {
     @Bean
