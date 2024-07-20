@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @Import(MinuteFlowConfiguration.class)
-@MinuteServiceRef(TaskManager.class)
+@MinuteServiceRef(serviceClass = TaskManager.class)
 @MinuteEntityRef(entityClass = TaskEntity.class, statePattern = "taskState*")
 public class TaskFlowConfiguration {
     @Bean

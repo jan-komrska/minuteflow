@@ -137,27 +137,18 @@ public class BaseDispatcher implements Dispatcher {
     }
 
     @SuppressWarnings("unchecked")
-    private <Entity> SourceResolver<Entity> getSourceResolver(Method method, Source<?> source) {
-        if ((source != null) && !source.isResolved()) {
-            Class<?> entityClass = methodDescriptor.getEntityClass(method);
-            //
-            if (entityClass != null) {
-                return (SourceResolver<Entity>) sourceResolverRepository.getSourceResolver(entityClass);
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
+    private <Entity> SourceResolver<Entity> getSourceResolver(Method method) {
+        Class<Entity> entityClass = (Class<Entity>) methodDescriptor.getEntityClass(method);
+        return (entityClass != null) ? sourceResolverRepository.getSourceResolver(entityClass) : null;
     }
 
     @Override
     public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable {
+        String actionName = methodDescriptor.getActionName(method);
         args = ArrayUtils.nullToEmpty(args);
         args = Arrays.copyOf(args, args.length);
         // static action
         if (methodDescriptor.isStaticAction(method)) {
-            String actionName = methodDescriptor.getActionName(method);
             State state = Objects.requireNonNull(dispatchContext.getStaticState());
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
@@ -169,7 +160,8 @@ public class BaseDispatcher implements Dispatcher {
         // standard action
         Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
         Source<Object> source = asSource(entity);
-        SourceResolver<Object> sourceResolver = getSourceResolver(method, source);
+        SourceResolver<Object> sourceResolver = //
+                ((source != null) && !source.isResolved()) ? getSourceResolver(method) : null;
         //
         if (sourceResolver != null) {
             String sourceName = methodDescriptor.getEntityName(method);
@@ -182,18 +174,17 @@ public class BaseDispatcher implements Dispatcher {
             entity = Objects.requireNonNull(entity);
         }
         //
-        String actionName = methodDescriptor.getActionName(method);
         List<State> states = envelopeAndSortStates(stateManager.getStates(entity));
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
-                Object result = controller.executeAction(actionName, args);
-                //
-                if (sourceResolver != null) {
-                    sourceResolver.commit(source);
+                try {
+                    return controller.executeAction(actionName, args);
+                } finally {
+                    if (sourceResolver != null) {
+                        sourceResolver.commit(source);
+                    }
                 }
-                //
-                return result;
             }
         }
         //
