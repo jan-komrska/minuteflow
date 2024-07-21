@@ -84,9 +84,14 @@ public class OrderFlowConfiguration {
 
     @ControllerRef("orderStateConstructor")
     @Bean
-    public OrderManager orderManagerStateConstructor( //
-            @Autowired OrderEntityRepository orderEntityRepository, @Autowired StateManager stateManager) {
+    public OrderManager orderManagerStateConstructor() {
         return new OrderManager() {
+            @Autowired
+            private OrderEntityRepository orderEntityRepository;
+
+            @Autowired
+            private StateManager stateManager;
+
             @Override
             @ActionRef
             public Long createOrder(String name) {
