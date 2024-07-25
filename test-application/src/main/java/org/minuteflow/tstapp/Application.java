@@ -21,6 +21,9 @@ package org.minuteflow.tstapp;
  */
 
 import org.minuteflow.core.api.contract.Source;
+import org.minuteflow.tstapp.jpa.FileEntity;
+import org.minuteflow.tstapp.jpa.FileEntityType;
+import org.minuteflow.tstapp.jpa.FileManager;
 import org.minuteflow.tstapp.multi.OrderManager;
 import org.minuteflow.tstapp.oop.AnimalEntity;
 import org.minuteflow.tstapp.oop.AnimalEntityType;
@@ -85,6 +88,21 @@ public class Application {
 
     //
 
+    @Autowired
+    private FileManager fileManager;
+
+    public void fileManagerExample() {
+        Source<FileEntity> pdfBook = fileManager.create("book.pdf", FileEntityType.PDF);
+        fileManager.print(pdfBook);
+        fileManager.delete(pdfBook);
+        //
+        Source<FileEntity> htmlPage = fileManager.create("page.html", FileEntityType.HTML);
+        fileManager.print(htmlPage);
+        fileManager.delete(htmlPage);
+    }
+
+    //
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
@@ -99,6 +117,8 @@ public class Application {
             taskManagerExample();
             System.out.println("--");
             orderManagerExample();
+            System.out.println("--");
+            fileManagerExample();
             System.out.println("--");
         };
     }

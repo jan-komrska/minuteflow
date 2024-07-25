@@ -21,5 +21,5 @@ package org.minuteflow.tstapp.jpa;
  */
 
 public enum FileEntityType {
-    PDF, DOC
+    PDF, HTML
 }

@@ -21,6 +21,8 @@ package org.minuteflow.tstapp.jpa;
  */
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,5 +45,6 @@ public class FileEntity {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
     private FileEntityType type;
 }

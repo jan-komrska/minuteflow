@@ -20,19 +20,7 @@ package org.minuteflow.tstapp.jpa;
  * =========================LICENSE_END==================================
  */
 
-import org.minuteflow.core.api.annotation.EntityRef;
-import org.minuteflow.core.api.contract.Source;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface FileManager {
-    public default Source<FileEntity> create(String name, FileEntityType type) {
-        throw new UnsupportedOperationException();
-    }
-
-    public default void print(@EntityRef Source<FileEntity> file) {
-        throw new UnsupportedOperationException();
-    }
-
-    public default void delete(@EntityRef Source<FileEntity> file) {
-        throw new UnsupportedOperationException();
-    }
+public interface FileEntityRepository extends JpaRepository<FileEntity, Long> {
 }
