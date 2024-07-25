@@ -142,6 +142,17 @@ public class BaseDispatcher implements Dispatcher {
         return (entityClass != null) ? sourceResolverRepository.getSourceResolver(entityClass) : null;
     }
 
+    @SuppressWarnings("unchecked")
+    private boolean isRollbackException(Throwable throwable, Class<? extends Throwable>[] rollbackFor) {
+        rollbackFor = ArrayUtils.nullToEmpty(rollbackFor, Class[].class);
+        for (Class<? extends Throwable> rollbackForElement : rollbackFor) {
+            if (rollbackForElement.isInstance(throwable)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable {
         String actionName = methodDescriptor.getActionName(method);
@@ -178,10 +189,13 @@ public class BaseDispatcher implements Dispatcher {
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
+                boolean rollback = false;
                 try {
                     return controller.executeAction(actionName, args);
+                } catch (Throwable throwable) {
+                    rollback = isRollbackException(throwable, dispatchContext.getRollbackFor());
                 } finally {
-                    if (sourceResolver != null) {
+                    if ((sourceResolver != null) && !rollback) {
                         sourceResolver.commit(source);
                     }
                 }

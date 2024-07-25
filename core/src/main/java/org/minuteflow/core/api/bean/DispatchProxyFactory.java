@@ -45,6 +45,7 @@ public class DispatchProxyFactory<Contract> extends AbstractFactoryBean<Contract
     private Dispatcher dispatcher = null;
 
     private State staticState = null;
+    private Class<? extends Throwable>[] rollbackFor = null;
 
     //
 
@@ -68,6 +69,7 @@ public class DispatchProxyFactory<Contract> extends AbstractFactoryBean<Contract
                     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                         DispatchContext dispatchContext = new DispatchContext();
                         dispatchContext.setStaticState(staticState);
+                        dispatchContext.setRollbackFor(rollbackFor);
                         //
                         return dispatcher.dispatch(method, args, dispatchContext);
                     }

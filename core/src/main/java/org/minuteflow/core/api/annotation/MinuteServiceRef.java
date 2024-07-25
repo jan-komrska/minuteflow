@@ -33,4 +33,6 @@ public @interface MinuteServiceRef {
     public Class<?> serviceClass();
 
     public String staticState() default "";
+
+    public Class<? extends Throwable>[] rollbackFor() default { RuntimeException.class };
 }

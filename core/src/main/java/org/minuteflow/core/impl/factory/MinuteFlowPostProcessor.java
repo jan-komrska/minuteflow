@@ -104,7 +104,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerName;
     }
 
-    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, Class<?> serviceClass, String staticState) {
+    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, Class<?> serviceClass, String staticState, Class<? extends Throwable>[] rollbackFor) {
         String minuteServiceName = nextBeanName(parentBeanName, "minute-service");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(DispatchProxyFactory.class);
@@ -116,6 +116,9 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         //
         if (StringUtils.isNotEmpty(staticState)) {
             beanDefinitionBuilder.addPropertyReference("staticState", staticState);
+        }
+        if (ArrayUtils.isNotEmpty(rollbackFor)) {
+            beanDefinitionBuilder.addPropertyValue("rollbackFor", rollbackFor);
         }
         //
         registry.registerBeanDefinition(minuteServiceName, beanDefinitionBuilder.getBeanDefinition());
@@ -211,7 +214,9 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
                         Class<?> serviceClass = minuteServiceRef.getClass("serviceClass");
                         String staticState = minuteServiceRef.getString("staticState");
-                        registerMinuteService(registry, beanName, serviceClass, staticState);
+                        @SuppressWarnings("unchecked")
+                        Class<? extends Throwable>[] rollbackFor = (Class<? extends Throwable>[]) minuteServiceRef.getClassArray("rollbackFor");
+                        registerMinuteService(registry, beanName, serviceClass, staticState, rollbackFor);
                     }
                     //
                     List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
