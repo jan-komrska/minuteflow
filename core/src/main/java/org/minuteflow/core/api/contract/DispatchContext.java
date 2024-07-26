@@ -30,6 +30,6 @@ import lombok.ToString;
 @Setter
 @ToString
 public class DispatchContext {
-    private State staticState;
+    private State staticState = null;
     private Class<? extends Throwable>[] rollbackFor = null;
 }
