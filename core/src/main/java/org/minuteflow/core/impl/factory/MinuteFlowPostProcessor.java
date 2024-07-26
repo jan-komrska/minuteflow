@@ -216,6 +216,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                         String staticState = minuteServiceRef.getString("staticState");
                         @SuppressWarnings("unchecked")
                         Class<? extends Throwable>[] rollbackFor = (Class<? extends Throwable>[]) minuteServiceRef.getClassArray("rollbackFor");
+                        //
                         registerMinuteService(registry, beanName, serviceClass, staticState, rollbackFor);
                     }
                     //

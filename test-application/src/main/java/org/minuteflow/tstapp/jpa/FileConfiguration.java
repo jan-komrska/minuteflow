@@ -62,7 +62,7 @@ public class FileConfiguration {
 
     @ControllerRef("fileStateAny")
     @Bean
-    public FileManager fileManagerStateConstructor() {
+    public FileManager fileManagerStateAny() {
         return new FileManager() {
             @Autowired
             private FileEntityRepository fileEntityRepository;
