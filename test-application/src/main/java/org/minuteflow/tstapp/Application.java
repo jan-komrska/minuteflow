@@ -1,5 +1,7 @@
 package org.minuteflow.tstapp;
 
+import org.minuteflow.core.api.contract.NullSource;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-test-application
@@ -92,11 +94,11 @@ public class Application {
     private FileManager fileManager;
 
     public void fileManagerExample() {
-        Source<FileEntity> pdfBook = fileManager.create("book.pdf", FileEntityType.PDF);
+        NullSource<FileEntity> pdfBook = fileManager.create("book.pdf", FileEntityType.PDF);
         fileManager.print(pdfBook);
         fileManager.delete(pdfBook);
         //
-        Source<FileEntity> htmlPage = fileManager.create("page.html", FileEntityType.HTML);
+        NullSource<FileEntity> htmlPage = fileManager.create("page.html", FileEntityType.HTML);
         fileManager.print(htmlPage);
         fileManager.delete(htmlPage);
     }

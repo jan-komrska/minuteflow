@@ -27,6 +27,7 @@ import org.minuteflow.core.api.annotation.MinuteEntityRef;
 import org.minuteflow.core.api.annotation.MinuteServiceRef;
 import org.minuteflow.core.api.bean.BasePropertyState;
 import org.minuteflow.core.api.bean.BaseState;
+import org.minuteflow.core.api.contract.NullSource;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.State;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,14 +70,14 @@ public class FileConfiguration {
 
             @ActionRef
             @Override
-            public Source<FileEntity> create(String name, FileEntityType type) {
+            public NullSource<FileEntity> create(String name, FileEntityType type) {
                 FileEntity fileEntity = new FileEntity();
                 fileEntity.setName(name);
                 fileEntity.setType(type);
                 //
                 fileEntity = fileEntityRepository.save(fileEntity);
                 log.info("created file: " + fileEntity);
-                return Source.withParameters(fileEntity.getId());
+                return Source.withNameAndParameters("findByName", fileEntity.getName());
             }
 
             @ActionRef

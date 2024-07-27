@@ -21,10 +21,11 @@ package org.minuteflow.tstapp.jpa;
  */
 
 import org.minuteflow.core.api.annotation.EntityRef;
+import org.minuteflow.core.api.contract.NullSource;
 import org.minuteflow.core.api.contract.Source;
 
 public interface FileManager {
-    public default Source<FileEntity> create(String name, FileEntityType type) {
+    public default NullSource<FileEntity> create(String name, FileEntityType type) {
         throw new UnsupportedOperationException();
     }
 
