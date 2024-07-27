@@ -45,19 +45,9 @@ import lombok.extern.slf4j.Slf4j;
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class BaseMethodDescriptor implements MethodDescriptor {
     @Getter
-    private static class ActionNameAccessor {
-        private Method method = null;
-        private String actionName = null;
-
-        public ActionNameAccessor(Method method) {
-            this.method = method;
-            this.actionName = method.getDeclaringClass().getName() + "." + method.getName();
-        }
-    }
-
-    @Getter
     private static class EntityAccessor {
         private Method method = null;
+        private String actionName = null;
         private int entityIndex = -1;
         private boolean staticAction = true;
         private String entityName = null;
@@ -65,6 +55,7 @@ public class BaseMethodDescriptor implements MethodDescriptor {
 
         public EntityAccessor(Method method) {
             this.method = method;
+            this.actionName = method.getDeclaringClass().getName() + "." + method.getName();
             this.entityIndex = -1;
             this.staticAction = true;
             //
@@ -118,18 +109,17 @@ public class BaseMethodDescriptor implements MethodDescriptor {
 
     //
 
-    private Map<Method, ActionNameAccessor> actionNameAccessorMap = new ConcurrentHashMap<Method, ActionNameAccessor>();
     private Map<Method, EntityAccessor> entityAccessorMap = new ConcurrentHashMap<Method, EntityAccessor>();
 
     //
 
     public String getActionName(Method method) {
-        if (!actionNameAccessorMap.containsKey(method)) {
-            ActionNameAccessor actionNameAccessor = new ActionNameAccessor(method);
-            actionNameAccessorMap.putIfAbsent(method, actionNameAccessor);
-            log.debug("registered actionNameAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
+        if (!entityAccessorMap.containsKey(method)) {
+            EntityAccessor entityAccessor = new EntityAccessor(method);
+            entityAccessorMap.putIfAbsent(method, entityAccessor);
+            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
         }
-        return actionNameAccessorMap.get(method).getActionName();
+        return entityAccessorMap.get(method).getActionName();
     }
 
     public boolean isStaticAction(Method method) {
