@@ -50,16 +50,16 @@ public interface Source<Entity> {
         return new SourceWithEntity<Entity>(name, parameters, entity);
     }
 
-    public static <Entity> Source<Entity> withName(String name) {
+    public static <Entity> NullSource<Entity> withName(String name) {
         return new SourceWithParameters<Entity>(name, null);
     }
 
-    public static <Entity> Source<Entity> withParameters(Object... parameters) {
+    public static <Entity> NullSource<Entity> withParameters(Object... parameters) {
         List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
         return new SourceWithParameters<Entity>(null, parametersAsList);
     }
 
-    public static <Entity> Source<Entity> withNameAndParameters(String name, Object... parameters) {
+    public static <Entity> NullSource<Entity> withNameAndParameters(String name, Object... parameters) {
         List<Object> parametersAsList = (parameters != null) ? Arrays.asList(parameters) : null;
         return new SourceWithParameters<Entity>(name, parametersAsList);
     }
