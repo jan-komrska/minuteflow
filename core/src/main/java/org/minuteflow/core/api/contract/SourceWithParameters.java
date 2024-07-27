@@ -29,7 +29,7 @@ import lombok.ToString;
 
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-class SourceWithParameters<Entity> implements Source<Entity> {
+class SourceWithParameters<Entity> implements NullSource<Entity> {
     private final String name;
 
     @ToString.Include

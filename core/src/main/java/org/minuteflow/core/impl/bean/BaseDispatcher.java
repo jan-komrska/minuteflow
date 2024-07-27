@@ -31,6 +31,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.minuteflow.core.api.contract.Controller;
 import org.minuteflow.core.api.contract.DispatchContext;
 import org.minuteflow.core.api.contract.Dispatcher;
@@ -177,7 +178,7 @@ public class BaseDispatcher implements Dispatcher {
                 ((source != null) && !source.isResolved()) ? getSourceResolver(method) : null;
         //
         if (sourceResolver != null) {
-            String sourceName = methodDescriptor.getEntityName(method);
+            String sourceName = StringUtils.defaultString(source.getName(), methodDescriptor.getEntityName(method));
             entity = source = sourceResolver.resolve(sourceName, source.getParameters());
             methodDescriptor.setEntity(method, args, entity);
         }

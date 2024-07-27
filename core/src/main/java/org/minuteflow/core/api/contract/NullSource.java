@@ -1,8 +1,8 @@
-package org.minuteflow.tstapp.jpa;
+package org.minuteflow.core.api.contract;
 
 /*-
  * ========================LICENSE_START=================================
- * minuteflow-test-application
+ * minuteflow-core
  * %%
  * Copyright (C) 2024 Jan Komrska
  * %%
@@ -20,8 +20,5 @@ package org.minuteflow.tstapp.jpa;
  * =========================LICENSE_END==================================
  */
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface FileEntityRepository extends JpaRepository<FileEntity, Long> {
-    public FileEntity findByName(String name);
+public interface NullSource<Entity> extends Source<Entity> {
 }
