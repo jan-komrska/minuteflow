@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @Scope(BeanDefinition.SCOPE_SINGLETON)
 public class BaseMethodDescriptor implements MethodDescriptor {
     @Getter
-    private static class EntityAccessor {
+    private static class MethodAccessor {
         private Method method = null;
         private String actionName = null;
         private int entityIndex = -1;
@@ -53,7 +53,7 @@ public class BaseMethodDescriptor implements MethodDescriptor {
         private String entityName = null;
         private Class<?> entityClass = null;
 
-        public EntityAccessor(Method method) {
+        public MethodAccessor(Method method) {
             this.method = method;
             this.actionName = method.getDeclaringClass().getName() + "." + method.getName();
             this.entityIndex = -1;
@@ -109,61 +109,40 @@ public class BaseMethodDescriptor implements MethodDescriptor {
 
     //
 
-    private Map<Method, EntityAccessor> entityAccessorMap = new ConcurrentHashMap<Method, EntityAccessor>();
+    private Map<Method, MethodAccessor> methodAccessorMap = new ConcurrentHashMap<Method, MethodAccessor>();
+
+    private MethodAccessor getOrCreateMethodAccessor(Method method) {
+        if (!methodAccessorMap.containsKey(method)) {
+            MethodAccessor methodAccessor = new MethodAccessor(method);
+            methodAccessorMap.putIfAbsent(method, methodAccessor);
+            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
+        }
+        return methodAccessorMap.get(method);
+    }
 
     //
 
     public String getActionName(Method method) {
-        if (!entityAccessorMap.containsKey(method)) {
-            EntityAccessor entityAccessor = new EntityAccessor(method);
-            entityAccessorMap.putIfAbsent(method, entityAccessor);
-            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
-        }
-        return entityAccessorMap.get(method).getActionName();
+        return getOrCreateMethodAccessor(method).getActionName();
     }
 
     public boolean isStaticAction(Method method) {
-        if (!entityAccessorMap.containsKey(method)) {
-            EntityAccessor entityAccessor = new EntityAccessor(method);
-            entityAccessorMap.putIfAbsent(method, entityAccessor);
-            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
-        }
-        return entityAccessorMap.get(method).isStaticAction();
+        return getOrCreateMethodAccessor(method).isStaticAction();
     }
 
     public Object getEntity(Method method, Object[] args) {
-        if (!entityAccessorMap.containsKey(method)) {
-            EntityAccessor entityAccessor = new EntityAccessor(method);
-            entityAccessorMap.putIfAbsent(method, entityAccessor);
-            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
-        }
-        return entityAccessorMap.get(method).getEntity(args);
+        return getOrCreateMethodAccessor(method).getEntity(args);
     }
 
     public String getEntityName(Method method) {
-        if (!entityAccessorMap.containsKey(method)) {
-            EntityAccessor entityAccessor = new EntityAccessor(method);
-            entityAccessorMap.putIfAbsent(method, entityAccessor);
-            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
-        }
-        return entityAccessorMap.get(method).getEntityName();
+        return getOrCreateMethodAccessor(method).getEntityName();
     }
 
     public Class<?> getEntityClass(Method method) {
-        if (!entityAccessorMap.containsKey(method)) {
-            EntityAccessor entityAccessor = new EntityAccessor(method);
-            entityAccessorMap.putIfAbsent(method, entityAccessor);
-            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
-        }
-        return entityAccessorMap.get(method).getEntityClass();
+        return getOrCreateMethodAccessor(method).getEntityClass();
     }
 
     public void setEntity(Method method, Object[] args, Object entity) {
-        if (!entityAccessorMap.containsKey(method)) {
-            EntityAccessor entityAccessor = new EntityAccessor(method);
-            entityAccessorMap.putIfAbsent(method, entityAccessor);
-            log.debug("registered entityAccessor for method: " + method.getDeclaringClass().getName() + "." + method.getName());
-        }
-        entityAccessorMap.get(method).setEntity(args, entity);
+        getOrCreateMethodAccessor(method).setEntity(args, entity);
     }
 }
