@@ -36,6 +36,8 @@ public interface Source<Entity> {
 
     public boolean isForDelete();
 
+    public boolean isForRollback();
+
     //
 
     public Entity getEntity();
@@ -43,6 +45,8 @@ public interface Source<Entity> {
     public void markForUpdate();
 
     public void markForDelete();
+
+    public void markForRollback();
 
     //
 

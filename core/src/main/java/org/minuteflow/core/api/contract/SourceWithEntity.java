@@ -40,6 +40,7 @@ class SourceWithEntity<Entity> implements Source<Entity> {
     private final boolean resolved = true;
     private boolean forUpdate = false;
     private boolean forDelete = false;
+    private boolean forRollback = false;
 
     //
 
@@ -59,5 +60,10 @@ class SourceWithEntity<Entity> implements Source<Entity> {
     @Override
     public void markForDelete() {
         forDelete = true;
+    }
+
+    @Override
+    public void markForRollback() {
+        forRollback = true;
     }
 }

@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.minuteflow.core.api.contract.Source;
 import org.minuteflow.core.api.contract.SourceResolver;
+import org.minuteflow.core.api.exception.EntityNotFoundException;
 import org.minuteflow.core.api.exception.SourceNotSupportedException;
 import org.springframework.data.repository.CrudRepository;
 
@@ -69,7 +70,7 @@ public class BaseSourceResolver<Entity> implements SourceResolver<Entity> {
             Entity entity = entityClass.cast(result);
             return Source.with(name, parameters, entity);
         } else {
-            throw new IllegalStateException();
+            throw new EntityNotFoundException();
         }
     }
 
