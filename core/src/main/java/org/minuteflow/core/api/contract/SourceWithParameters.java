@@ -60,6 +60,11 @@ class SourceWithParameters<Entity> implements NullSource<Entity> {
     }
 
     @Override
+    public boolean isForRollback() {
+        return false;
+    }
+
+    @Override
     public Entity getEntity() {
         throw new IllegalStateException();
     }
@@ -71,6 +76,11 @@ class SourceWithParameters<Entity> implements NullSource<Entity> {
 
     @Override
     public void markForDelete() {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    public void markForRollback() {
         throw new IllegalStateException();
     }
 }

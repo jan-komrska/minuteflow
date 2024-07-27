@@ -192,13 +192,15 @@ public class BaseDispatcher implements Dispatcher {
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
-                boolean commitFlag = true;
                 try {
                     return controller.executeAction(actionName, args);
                 } catch (Throwable throwable) {
-                    commitFlag = !isRollbackException(throwable, dispatchContext.getRollbackFor());
+                    boolean forRollback = isRollbackException(throwable, dispatchContext.getRollbackFor());
+                    if ((source != null) && forRollback) {
+                        source.markForRollback();
+                    }
                 } finally {
-                    if (commitFlag && (sourceResolver != null)) {
+                    if ((sourceResolver != null) && !source.isForRollback()) {
                         sourceResolver.commit(source);
                     }
                 }
