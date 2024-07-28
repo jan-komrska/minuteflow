@@ -36,6 +36,6 @@ For the latest version please use following dependency:
 <dependency>
   <groupId>org.minuteflow</groupId>
   <artifactId>minuteflow-core</artifactId>
-  <version>0.4.1</version>
+  <version>0.4.2</version>
 </dependency>
 ```
