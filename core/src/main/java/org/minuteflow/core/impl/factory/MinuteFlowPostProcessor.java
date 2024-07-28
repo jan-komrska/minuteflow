@@ -115,8 +115,11 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerName;
     }
 
-    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, Class<?> serviceClass, String staticState, Class<? extends Throwable>[] rollbackFor) {
+    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteServiceRef> minuteServiceRef) {
         String minuteServiceName = nextBeanName(parentBeanName, "minute-service");
+        Class<?> serviceClass = minuteServiceRef.getClass("serviceClass");
+        String staticState = minuteServiceRef.getString("staticState");
+        Class<?>[] rollbackFor = minuteServiceRef.getClassArray("rollbackFor");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(DispatchProxyFactory.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -172,6 +175,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return minuteSourceResolverName;
     }
 
+    //
+
     private <TargetAnnotation extends Annotation> List<MergedAnnotation<TargetAnnotation>> getAnnotations( //
             MergedAnnotations mergedAnnotations, Class<TargetAnnotation> targetAnnotationClass, //
             Class<? extends Annotation> targetRepeatableAnnotationClass) {
@@ -211,12 +216,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
                             getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
                     for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
-                        Class<?> serviceClass = minuteServiceRef.getClass("serviceClass");
-                        String staticState = minuteServiceRef.getString("staticState");
-                        @SuppressWarnings("unchecked")
-                        Class<? extends Throwable>[] rollbackFor = (Class<? extends Throwable>[]) minuteServiceRef.getClassArray("rollbackFor");
-                        //
-                        registerMinuteService(registry, beanName, serviceClass, staticState, rollbackFor);
+                        registerMinuteService(registry, beanName, minuteServiceRef);
                     }
                     //
                     List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
