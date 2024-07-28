@@ -140,7 +140,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
     }
 
     private String registerStateAccessor(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
-        String minuteEntityName = nextBeanName(parentBeanName, "minute-entity");
+        String stateAccessorName = nextBeanName(parentBeanName, "state-accessor");
         Class<?> entityClass = minuteEntityRef.getClass("entityClass");
         String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
         //
@@ -150,15 +150,14 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.addConstructorArgValue(entityClass);
         beanDefinitionBuilder.addConstructorArgValue(statePatterns);
         //
-        registry.registerBeanDefinition(minuteEntityName, beanDefinitionBuilder.getBeanDefinition());
+        registry.registerBeanDefinition(stateAccessorName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered minute entity [" + minuteEntityName + "]");
-        //
-        return minuteEntityName;
+        log.debug("Registered minute entity [" + stateAccessorName + "]");
+        return stateAccessorName;
     }
 
     private String registerSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
-        String minuteSourceResolverName = nextBeanName(parentBeanName, "minute-source-resolver");
+        String sourceResolverName = nextBeanName(parentBeanName, "source-resolver");
         Class<?> entityClass = minuteEntityRef.getClass("entityClass");
         Class<?> repositoryClass = minuteEntityRef.getClass("repositoryClass");
         String defaultFindMethod = minuteEntityRef.getString("defaultFindMethod");
@@ -174,11 +173,10 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.addConstructorArgValue(new RuntimeBeanReference(repositoryClass));
         beanDefinitionBuilder.addConstructorArgValue(defaultFindMethod);
         //
-        registry.registerBeanDefinition(minuteSourceResolverName, beanDefinitionBuilder.getBeanDefinition());
+        registry.registerBeanDefinition(sourceResolverName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered minute source resolver [" + minuteSourceResolverName + "]");
-        //
-        return minuteSourceResolverName;
+        log.debug("Registered minute source resolver [" + sourceResolverName + "]");
+        return sourceResolverName;
     }
 
     //
