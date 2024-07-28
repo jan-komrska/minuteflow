@@ -142,8 +142,10 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return minuteServiceName;
     }
 
-    private String registerMinuteEntity(BeanDefinitionRegistry registry, String parentBeanName, Class<?> entityClass, String[] statePatterns) {
+    private String registerMinuteEntity(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
         String minuteEntityName = nextBeanName(parentBeanName, "minute-entity");
+        Class<?> entityClass = minuteEntityRef.getClass("entityClass");
+        String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(MinuteFlowStateAccessor.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -158,8 +160,15 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return minuteEntityName;
     }
 
-    private String registerMinuteSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, Class<?> entityClass, Class<?> repositoryClass, String defaultFindMethod) {
+    private String registerMinuteSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
         String minuteSourceResolverName = nextBeanName(parentBeanName, "minute-source-resolver");
+        Class<?> entityClass = minuteEntityRef.getClass("entityClass");
+        Class<?> repositoryClass = minuteEntityRef.getClass("repositoryClass");
+        String defaultFindMethod = minuteEntityRef.getString("defaultFindMethod");
+        //
+        if (!ClassUtils.isAssignable(repositoryClass, CrudRepository.class)) {
+            return null;
+        }
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseSourceResolver.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -222,15 +231,8 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
                             getAnnotations(mergedAnnotations, MinuteEntityRef.class, MinuteEntityRefs.class);
                     for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
-                        Class<?> entityClass = minuteEntityRef.getClass("entityClass");
-                        String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
-                        Class<?> repositoryClass = minuteEntityRef.getClass("repositoryClass");
-                        String defaultFindMethod = minuteEntityRef.getString("defaultFindMethod");
-                        //
-                        registerMinuteEntity(registry, beanName, entityClass, statePatterns);
-                        if (ClassUtils.isAssignable(repositoryClass, CrudRepository.class)) {
-                            registerMinuteSourceResolver(registry, beanName, entityClass, repositoryClass, defaultFindMethod);
-                        }
+                        registerMinuteEntity(registry, beanName, minuteEntityRef);
+                        registerMinuteSourceResolver(registry, beanName, minuteEntityRef);
                     }
                 }
             }
