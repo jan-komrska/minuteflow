@@ -88,7 +88,22 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return stateName;
     }
 
-    private String registerController(BeanDefinitionRegistry registry, String parentBeanName, String parentStateName, String serviceName) {
+    private String registerController(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<ControllerRef> controllerRef) {
+        String parentStateName;
+        String serviceName = parentBeanName;
+        //
+        ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
+        String[] targetStateNames = controllerRef.getStringArray("value");
+        if (ArrayUtils.isEmpty(targetStateNames)) {
+            throw new IllegalArgumentException();
+        }
+        //
+        if (ControllerRefType.IDENTITY.equals(type)) {
+            parentStateName = targetStateNames[0];
+        } else {
+            parentStateName = registerExpressionState(registry, parentBeanName, ExpressionStateType.valueOf(type), targetStateNames);
+        }
+        //
         String controllerName = nextBeanName(parentBeanName, "controller");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
@@ -194,19 +209,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     List<MergedAnnotation<ControllerRef>> controlleRefs = //
                             getAnnotations(mergedAnnotations, ControllerRef.class, ControllerRefs.class);
                     for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
-                        ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
-                        String[] targetStateNames = controllerRef.getStringArray("value");
-                        //
-                        if (ControllerRefType.IDENTITY.equals(type)) {
-                            if (targetStateNames.length == 1) {
-                                registerController(registry, beanName, targetStateNames[0], beanName);
-                            } else {
-                                throw new IllegalArgumentException();
-                            }
-                        } else {
-                            String stateName = registerExpressionState(registry, beanName, ExpressionStateType.valueOf(type), targetStateNames);
-                            registerController(registry, beanName, stateName, beanName);
-                        }
+                        registerController(registry, beanName, controllerRef);
                     }
                     //
                     List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
