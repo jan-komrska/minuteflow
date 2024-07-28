@@ -23,6 +23,7 @@ package org.minuteflow.core.impl.factory;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -204,7 +205,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
             }
         }
         //
-        return null;
+        return MergedAnnotations.of(Collections.emptyList());
     }
 
     @Override
@@ -212,25 +213,24 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         String[] beanNames = ArrayUtils.nullToEmpty(registry.getBeanDefinitionNames());
         for (String beanName : beanNames) {
             MergedAnnotations mergedAnnotations = getMetadata(registry, beanName);
-            if (mergedAnnotations != null) {
-                List<MergedAnnotation<ControllerRef>> controlleRefs = //
-                        getAnnotations(mergedAnnotations, ControllerRef.class, ControllerRefs.class);
-                for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
-                    registerController(registry, beanName, controllerRef);
-                }
-                //
-                List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
-                        getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
-                for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
-                    registerDispatchProxy(registry, beanName, minuteServiceRef);
-                }
-                //
-                List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
-                        getAnnotations(mergedAnnotations, MinuteEntityRef.class, MinuteEntityRefs.class);
-                for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
-                    registerStateAccessor(registry, beanName, minuteEntityRef);
-                    registerSourceResolver(registry, beanName, minuteEntityRef);
-                }
+            //
+            List<MergedAnnotation<ControllerRef>> controlleRefs = //
+                    getAnnotations(mergedAnnotations, ControllerRef.class, ControllerRefs.class);
+            for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
+                registerController(registry, beanName, controllerRef);
+            }
+            //
+            List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
+                    getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
+            for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
+                registerDispatchProxy(registry, beanName, minuteServiceRef);
+            }
+            //
+            List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
+                    getAnnotations(mergedAnnotations, MinuteEntityRef.class, MinuteEntityRefs.class);
+            for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
+                registerStateAccessor(registry, beanName, minuteEntityRef);
+                registerSourceResolver(registry, beanName, minuteEntityRef);
             }
         }
     }
