@@ -73,7 +73,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
     //
 
     private String registerExpressionState(BeanDefinitionRegistry registry, String parentBeanName, ExpressionStateType type, String[] targetStateNames) {
-        String stateName = nextBeanName(parentBeanName, "expression-state");
+        String expressionStateName = nextBeanName(parentBeanName, "expression-state");
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(ExpressionState.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
@@ -81,10 +81,10 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         beanDefinitionBuilder.addPropertyValue("type", type);
         beanDefinitionBuilder.addPropertyValue("targetStateNames", targetStateNames);
         //
-        registry.registerBeanDefinition(stateName, beanDefinitionBuilder.getBeanDefinition());
+        registry.registerBeanDefinition(expressionStateName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered expression state [" + stateName + "]");
-        return stateName;
+        log.debug("Registered expression state [" + expressionStateName + "]");
+        return expressionStateName;
     }
 
     private String registerController(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<ControllerRef> controllerRef) {
