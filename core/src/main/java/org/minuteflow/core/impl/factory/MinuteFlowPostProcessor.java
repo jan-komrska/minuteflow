@@ -115,7 +115,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return controllerName;
     }
 
-    private String registerMinuteService(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteServiceRef> minuteServiceRef) {
+    private String registerDispatchProxy(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteServiceRef> minuteServiceRef) {
         String minuteServiceName = nextBeanName(parentBeanName, "minute-service");
         Class<?> serviceClass = minuteServiceRef.getClass("serviceClass");
         String staticState = minuteServiceRef.getString("staticState");
@@ -142,7 +142,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return minuteServiceName;
     }
 
-    private String registerMinuteEntity(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
+    private String registerStateAccessor(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
         String minuteEntityName = nextBeanName(parentBeanName, "minute-entity");
         Class<?> entityClass = minuteEntityRef.getClass("entityClass");
         String[] statePatterns = minuteEntityRef.getStringArray("statePattern");
@@ -160,7 +160,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return minuteEntityName;
     }
 
-    private String registerMinuteSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
+    private String registerSourceResolver(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
         String minuteSourceResolverName = nextBeanName(parentBeanName, "minute-source-resolver");
         Class<?> entityClass = minuteEntityRef.getClass("entityClass");
         Class<?> repositoryClass = minuteEntityRef.getClass("repositoryClass");
@@ -225,14 +225,14 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
                     List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
                             getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
                     for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
-                        registerMinuteService(registry, beanName, minuteServiceRef);
+                        registerDispatchProxy(registry, beanName, minuteServiceRef);
                     }
                     //
                     List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
                             getAnnotations(mergedAnnotations, MinuteEntityRef.class, MinuteEntityRefs.class);
                     for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
-                        registerMinuteEntity(registry, beanName, minuteEntityRef);
-                        registerMinuteSourceResolver(registry, beanName, minuteEntityRef);
+                        registerStateAccessor(registry, beanName, minuteEntityRef);
+                        registerSourceResolver(registry, beanName, minuteEntityRef);
                     }
                 }
             }
