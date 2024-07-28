@@ -55,6 +55,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
@@ -197,15 +198,21 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
 
     private MergedAnnotations getMetadata(BeanDefinitionRegistry registry, String beanName) {
         BeanDefinition abstractBeanDefinition = registry.getBeanDefinition(beanName);
+        //
+        AnnotatedTypeMetadata metadata = null;
         if (abstractBeanDefinition instanceof AnnotatedBeanDefinition beanDefinition) {
             if (StringUtils.isNotEmpty(beanDefinition.getFactoryMethodName())) {
-                return beanDefinition.getFactoryMethodMetadata().getAnnotations();
+                metadata = beanDefinition.getFactoryMethodMetadata();
             } else {
-                return beanDefinition.getMetadata().getAnnotations();
+                metadata = beanDefinition.getMetadata();
             }
         }
         //
-        return MergedAnnotations.of(Collections.emptyList());
+        if (metadata != null) {
+            return metadata.getAnnotations();
+        } else {
+            return MergedAnnotations.of(Collections.emptyList());
+        }
     }
 
     @Override
