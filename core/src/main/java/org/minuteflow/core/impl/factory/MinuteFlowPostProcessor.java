@@ -89,22 +89,18 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
     }
 
     private String registerController(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<ControllerRef> controllerRef) {
-        String parentStateName;
-        String serviceName = parentBeanName;
-        //
         ControllerRefType type = controllerRef.getEnum("type", ControllerRefType.class);
         String[] targetStateNames = controllerRef.getStringArray("value");
         if (ArrayUtils.isEmpty(targetStateNames)) {
             throw new IllegalArgumentException();
         }
         //
-        if (ControllerRefType.IDENTITY.equals(type)) {
-            parentStateName = targetStateNames[0];
-        } else {
-            parentStateName = registerExpressionState(registry, parentBeanName, ExpressionStateType.valueOf(type), targetStateNames);
-        }
-        //
         String controllerName = nextBeanName(parentBeanName, "controller");
+        String parentStateName = switch (type) {
+            case IDENTITY -> targetStateNames[0];
+            default -> registerExpressionState(registry, parentBeanName, ExpressionStateType.valueOf(type), targetStateNames);
+        };
+        String serviceName = parentBeanName;
         //
         BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(BaseController.class);
         beanDefinitionBuilder.setScope(BeanDefinition.SCOPE_SINGLETON);
