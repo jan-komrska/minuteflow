@@ -54,7 +54,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.annotation.MergedAnnotations;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
@@ -152,7 +151,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         //
         registry.registerBeanDefinition(stateAccessorName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered minute entity [" + stateAccessorName + "]");
+        log.debug("Registered state accessor [" + stateAccessorName + "]");
         return stateAccessorName;
     }
 
@@ -175,7 +174,7 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         //
         registry.registerBeanDefinition(sourceResolverName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered minute source resolver [" + sourceResolverName + "]");
+        log.debug("Registered source resolver [" + sourceResolverName + "]");
         return sourceResolverName;
     }
 
@@ -195,40 +194,42 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         return annotationList;
     }
 
+    private MergedAnnotations getMetadata(BeanDefinitionRegistry registry, String beanName) {
+        BeanDefinition abstractBeanDefinition = registry.getBeanDefinition(beanName);
+        if (abstractBeanDefinition instanceof AnnotatedBeanDefinition beanDefinition) {
+            if (StringUtils.isNotEmpty(beanDefinition.getFactoryMethodName())) {
+                return beanDefinition.getFactoryMethodMetadata().getAnnotations();
+            } else {
+                return beanDefinition.getMetadata().getAnnotations();
+            }
+        }
+        //
+        return null;
+    }
+
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         String[] beanNames = ArrayUtils.nullToEmpty(registry.getBeanDefinitionNames());
         for (String beanName : beanNames) {
-            BeanDefinition abstractBeanDefinition = registry.getBeanDefinition(beanName);
-            if (abstractBeanDefinition instanceof AnnotatedBeanDefinition beanDefinition) {
-                AnnotatedTypeMetadata metadata;
-                if (StringUtils.isNotEmpty(beanDefinition.getFactoryMethodName())) {
-                    metadata = beanDefinition.getFactoryMethodMetadata();
-                } else {
-                    metadata = beanDefinition.getMetadata();
+            MergedAnnotations mergedAnnotations = getMetadata(registry, beanName);
+            if (mergedAnnotations != null) {
+                List<MergedAnnotation<ControllerRef>> controlleRefs = //
+                        getAnnotations(mergedAnnotations, ControllerRef.class, ControllerRefs.class);
+                for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
+                    registerController(registry, beanName, controllerRef);
                 }
                 //
-                if (metadata != null) {
-                    MergedAnnotations mergedAnnotations = metadata.getAnnotations();
-                    //
-                    List<MergedAnnotation<ControllerRef>> controlleRefs = //
-                            getAnnotations(mergedAnnotations, ControllerRef.class, ControllerRefs.class);
-                    for (MergedAnnotation<ControllerRef> controllerRef : controlleRefs) {
-                        registerController(registry, beanName, controllerRef);
-                    }
-                    //
-                    List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
-                            getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
-                    for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
-                        registerDispatchProxy(registry, beanName, minuteServiceRef);
-                    }
-                    //
-                    List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
-                            getAnnotations(mergedAnnotations, MinuteEntityRef.class, MinuteEntityRefs.class);
-                    for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
-                        registerStateAccessor(registry, beanName, minuteEntityRef);
-                        registerSourceResolver(registry, beanName, minuteEntityRef);
-                    }
+                List<MergedAnnotation<MinuteServiceRef>> minuteServiceRefs = //
+                        getAnnotations(mergedAnnotations, MinuteServiceRef.class, MinuteServiceRefs.class);
+                for (MergedAnnotation<MinuteServiceRef> minuteServiceRef : minuteServiceRefs) {
+                    registerDispatchProxy(registry, beanName, minuteServiceRef);
+                }
+                //
+                List<MergedAnnotation<MinuteEntityRef>> minuteEntityRefs = //
+                        getAnnotations(mergedAnnotations, MinuteEntityRef.class, MinuteEntityRefs.class);
+                for (MergedAnnotation<MinuteEntityRef> minuteEntityRef : minuteEntityRefs) {
+                    registerStateAccessor(registry, beanName, minuteEntityRef);
+                    registerSourceResolver(registry, beanName, minuteEntityRef);
                 }
             }
         }
