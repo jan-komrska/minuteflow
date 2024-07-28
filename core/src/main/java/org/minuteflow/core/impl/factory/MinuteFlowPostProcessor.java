@@ -84,7 +84,6 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         registry.registerBeanDefinition(stateName, beanDefinitionBuilder.getBeanDefinition());
         //
         log.debug("Registered expression state [" + stateName + "]");
-        //
         return stateName;
     }
 
@@ -111,12 +110,11 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
         registry.registerBeanDefinition(controllerName, beanDefinitionBuilder.getBeanDefinition());
         //
         log.debug("Registered controller [" + controllerName + "]");
-        //
         return controllerName;
     }
 
     private String registerDispatchProxy(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteServiceRef> minuteServiceRef) {
-        String minuteServiceName = nextBeanName(parentBeanName, "minute-service");
+        String dispatchProxyName = nextBeanName(parentBeanName, "dispatch-proxy");
         Class<?> serviceClass = minuteServiceRef.getClass("serviceClass");
         String staticState = minuteServiceRef.getString("staticState");
         Class<?>[] rollbackFor = minuteServiceRef.getClassArray("rollbackFor");
@@ -135,11 +133,10 @@ public class MinuteFlowPostProcessor implements BeanDefinitionRegistryPostProces
             beanDefinitionBuilder.addPropertyValue("rollbackFor", rollbackFor);
         }
         //
-        registry.registerBeanDefinition(minuteServiceName, beanDefinitionBuilder.getBeanDefinition());
+        registry.registerBeanDefinition(dispatchProxyName, beanDefinitionBuilder.getBeanDefinition());
         //
-        log.debug("Registered minute service [" + minuteServiceName + "]");
-        //
-        return minuteServiceName;
+        log.debug("Registered dispatch proxy [" + dispatchProxyName + "]");
+        return dispatchProxyName;
     }
 
     private String registerStateAccessor(BeanDefinitionRegistry registry, String parentBeanName, MergedAnnotation<MinuteEntityRef> minuteEntityRef) {
