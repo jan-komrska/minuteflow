@@ -182,16 +182,4 @@ public class OrderFlowConfiguration {
             }
         };
     }
-
-    @ControllerRef(type = ControllerRefType.NAND, value = { "orderStatePaymentDone", "orderStatePackagingDone" })
-    @Bean
-    public OrderManager orderManagerStatePaPNotDone() {
-        return new OrderManager() {
-            @Override
-            @ActionRef
-            public void finishOrder(Source<OrderEntity> order) {
-                // DO NOTHING
-            }
-        };
-    }
 }

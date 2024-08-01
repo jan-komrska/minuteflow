@@ -1,5 +1,7 @@
 package org.minuteflow.core.impl.bean;
 
+import java.lang.reflect.InvocationHandler;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -207,6 +209,10 @@ public class BaseDispatcher implements Dispatcher {
             }
         }
         //
-        throw new ControllerNotFoundException();
+        if ((dispatchContext.getProxy() != null) && method.isDefault()) {
+            return InvocationHandler.invokeDefault(dispatchContext.getProxy(), method, args);
+        } else {
+            throw new ControllerNotFoundException();
+        }
     }
 }
