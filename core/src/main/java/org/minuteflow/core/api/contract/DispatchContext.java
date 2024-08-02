@@ -32,4 +32,6 @@ import lombok.ToString;
 public class DispatchContext {
     private State staticState = null;
     private Class<? extends Throwable>[] rollbackFor = null;
+
+    private Object proxy;
 }

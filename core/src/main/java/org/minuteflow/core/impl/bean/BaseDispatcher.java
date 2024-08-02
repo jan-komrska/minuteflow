@@ -1,5 +1,7 @@
 package org.minuteflow.core.impl.bean;
 
+import java.lang.reflect.InvocationHandler;
+
 /*-
  * ========================LICENSE_START=================================
  * minuteflow-core
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -133,8 +136,17 @@ public class BaseDispatcher implements Dispatcher {
     }
 
     @SuppressWarnings("unchecked")
-    private <Entity> Source<Entity> asSource(Object entity) {
-        return (entity instanceof Source<?>) ? (Source<Entity>) entity : null;
+    private <Entity> Source<Entity> asSource(Object entity, Predicate<Source<Entity>> predicate) {
+        Source<Entity> source = (entity instanceof Source<?>) ? (Source<Entity>) entity : null;
+        if (source == null) {
+            return null;
+        } else if (predicate == null) {
+            return source;
+        } else if (predicate.test(source)) {
+            return source;
+        } else {
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -156,57 +168,99 @@ public class BaseDispatcher implements Dispatcher {
         return false;
     }
 
-    @Override
-    public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable {
-        String actionName = methodDescriptor.getActionName(method);
-        args = ArrayUtils.nullToEmpty(args);
-        args = Arrays.copyOf(args, args.length);
-        // static action
-        if (methodDescriptor.isStaticAction(method)) {
-            State state = Objects.requireNonNull(dispatchContext.getStaticState());
-            Controller controller = controllerRepository.getController(state.getName(), actionName);
-            if (controller != null) {
-                return controller.executeAction(actionName, args);
-            } else {
-                throw new ControllerNotFoundException();
-            }
-        }
-        // standard action
-        Object entity = Objects.requireNonNull(methodDescriptor.getEntity(method, args));
-        Source<Object> source = asSource(entity);
-        SourceResolver<Object> sourceResolver = //
-                ((source != null) && !source.isResolved()) ? getSourceResolver(method) : null;
+    //
+
+    private Object resolveEntity(Method method, Object[] args) {
+        Object entity = methodDescriptor.getEntity(method, args);
+        Source<Object> source = asSource(entity, null);
         //
-        if (sourceResolver != null) {
-            String sourceName = StringUtils.defaultString(source.getName(), methodDescriptor.getEntityName(method));
-            entity = source = sourceResolver.resolve(sourceName, source.getParameters());
-            methodDescriptor.setEntity(method, args, entity);
+        if (source == null) {
+            return entity;
+        } else if (source.isResolved()) {
+            return source.getEntity();
+        } else {
+            return null;
         }
+    }
+
+    private SourceResolver<Object> resolveSource(Method method, Object[] args) {
+        Object entity = methodDescriptor.getEntity(method, args);
+        Source<Object> source = asSource(entity, (s) -> !s.isResolved());
         //
         if (source != null) {
-            entity = (source.isResolved()) ? source.getEntity() : null;
-            entity = Objects.requireNonNull(entity);
+            SourceResolver<Object> sourceResolver = Objects.requireNonNull(getSourceResolver(method));
+            String sourceName = StringUtils.defaultString(source.getName(), methodDescriptor.getEntityName(method));
+            //
+            entity = source = sourceResolver.resolve(sourceName, source.getParameters());
+            methodDescriptor.setEntity(method, args, entity);
+            //
+            return sourceResolver;
+        } else {
+            return null;
+        }
+    }
+
+    private void commitSource(Method method, Object[] args, SourceResolver<Object> sourceResolver) {
+        Object entity = methodDescriptor.getEntity(method, args);
+        Source<Object> source = asSource(entity, (s) -> s.isResolved() && !s.isForRollback());
+        //
+        if ((sourceResolver != null) && (source != null)) {
+            sourceResolver.commit(source);
+        }
+    }
+
+    private void rollbackSource(Method method, Object[] args, Throwable throwable, DispatchContext dispatchContext) {
+        Object entity = methodDescriptor.getEntity(method, args);
+        Source<Object> source = asSource(entity, (s) -> s.isResolved());
+        boolean rollbackFlag = isRollbackException(throwable, dispatchContext.getRollbackFor());
+        //
+        if ((source != null) && rollbackFlag) {
+            source.markForRollback();
+        }
+    }
+
+    private Controller resolveController(Method method, Object entity, DispatchContext dispatchContext) {
+        String actionName = methodDescriptor.getActionName(method);
+        //
+        if (methodDescriptor.isStaticAction(method)) {
+            State state = Objects.requireNonNull(dispatchContext.getStaticState());
+            return controllerRepository.getController(state.getName(), actionName);
         }
         //
-        List<State> states = envelopeAndSortStates(stateManager.getStates(entity));
+        List<State> states = (entity != null) ? envelopeAndSortStates(stateManager.getStates(entity)) : List.of();
         for (State state : states) {
             Controller controller = controllerRepository.getController(state.getName(), actionName);
             if (controller != null) {
-                try {
-                    return controller.executeAction(actionName, args);
-                } catch (Throwable throwable) {
-                    boolean forRollback = isRollbackException(throwable, dispatchContext.getRollbackFor());
-                    if ((source != null) && forRollback) {
-                        source.markForRollback();
-                    }
-                } finally {
-                    if ((sourceResolver != null) && !source.isForRollback()) {
-                        sourceResolver.commit(source);
-                    }
-                }
+                return controller;
             }
         }
         //
-        throw new ControllerNotFoundException();
+        return null;
+    }
+
+    @Override
+    public Object dispatch(Method method, Object[] args, DispatchContext dispatchContext) throws Throwable {
+        args = ArrayUtils.nullToEmpty(args);
+        args = Arrays.copyOf(args, args.length);
+        //
+        SourceResolver<Object> sourceResolver = resolveSource(method, args);
+        Object entity = resolveEntity(method, args);
+        Controller controller = resolveController(method, entity, dispatchContext);
+        //
+        if (controller != null) {
+            String actionName = methodDescriptor.getActionName(method);
+            try {
+                return controller.executeAction(actionName, args);
+            } catch (Throwable throwable) {
+                rollbackSource(method, args, throwable, dispatchContext);
+                throw throwable;
+            } finally {
+                commitSource(method, args, sourceResolver);
+            }
+        } else if ((dispatchContext.getProxy() != null) && method.isDefault()) {
+            return InvocationHandler.invokeDefault(dispatchContext.getProxy(), method, args);
+        } else {
+            throw new ControllerNotFoundException();
+        }
     }
 }

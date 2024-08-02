@@ -33,7 +33,7 @@ public interface OrderManager {
     }
 
     public default void finishOrder(@EntityRef Source<OrderEntity> order) {
-        throw new UnsupportedOperationException();
+        // DO NOTHING
     }
 
     public default void orderPaymentDone(@EntityRef Source<OrderEntity> order) {

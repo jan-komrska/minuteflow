@@ -70,6 +70,7 @@ public class DispatchProxyFactory<Contract> extends AbstractFactoryBean<Contract
                         DispatchContext dispatchContext = new DispatchContext();
                         dispatchContext.setStaticState(staticState);
                         dispatchContext.setRollbackFor(rollbackFor);
+                        dispatchContext.setProxy(proxy);
                         //
                         return dispatcher.dispatch(method, args, dispatchContext);
                     }
