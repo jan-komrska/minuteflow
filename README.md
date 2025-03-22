@@ -1,3 +1,5 @@
+> :warning: **minuteflow library is replaced by [casecore library](https://github.com/jan-komrska/casecore)**
+
 # MinuteFlow
 
 *MinuteFlow* is a small *spring-boot* library, which is using domain-driven design in order to implement  
